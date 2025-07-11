@@ -1,3 +1,10 @@
+## [1.0.3](https://github.com/sean2077/winguake/compare/v1.0.2...v1.0.3) (2025-07-11)
+
+
+### Bug Fixes
+
+* remove default behavior: auto-add ctrl+hotkey to launch new app ([874196e](https://github.com/sean2077/winguake/commit/874196e72a77ee20c775a7381c4dae8415bff9ff)), closes [#1](https://github.com/sean2077/winguake/issues/1)
+
 ## [1.0.2](https://github.com/sean2077/winguake/compare/v1.0.1...v1.0.2) (2025-07-10)
 
 
