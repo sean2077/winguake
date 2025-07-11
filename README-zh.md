@@ -79,6 +79,15 @@ disable=true
 
 ```
 
+常用的快捷键符号：
+
+- `#`：Win键
+- `!`：Alt键
+- `^`：Ctrl键
+- `+`：Shift键
+
+更多快捷键符号请参考 [Autohotkey Symbols](https://www.autohotkey.com/docs/v2/Hotkeys.htm#Symbols).
+
 ### 3.2. 开机自启动
 
  最简单的方法是在 `Startup(启动)` 文件夹中放置脚本文件的快捷方式.

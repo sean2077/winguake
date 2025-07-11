@@ -420,8 +420,6 @@ RegisterHotkeys() {
             try
             {
                 Hotkey(appConfig.hotkey, ToggleApp.Bind(appKey))
-                ; 注册 Ctrl + 热键（如 Ctrl+F3）
-                Hotkey("^" . appConfig.hotkey, LaunchApp.Bind(appKey))
             }
             catch as err {
                 ShowNotification("Failed to register hotkey: " . appConfig.hotkey . " - " . err.message)
@@ -610,9 +608,9 @@ LaunchApp(appKey, *) {
 }
 
 ; 显示通知
-ShowNotification(message) {
+ShowNotification(message, delay := 1500) {
     ToolTip(message)
-    SetTimer(() => ToolTip(), -1000)  ; 1秒后自动消失
+    SetTimer(() => ToolTip(), -delay)
 }
 
 ; ==================== 扩展功能 ====================
@@ -653,8 +651,6 @@ ShowAppStatus() {
         }
     }
 
-    status .= "`nPress F12 to refresh status`nMulti-window applications support cycle activation"
-
     MsgBox(status, "Application Status - " . SCRIPT_NAME, 0x1000)
 }
 
@@ -673,7 +669,6 @@ CreateTrayMenu() {
             continue
         }
         A_TrayMenu.Add("Toggle " . appConfig.name . " (" . appConfig.hotkey . ")", ToggleApp.Bind(appKey))
-        A_TrayMenu.Add("Start new " . appConfig.name . " (Ctrl+" . appConfig.hotkey . ")", LaunchApp.Bind(appKey))
     }
 
     A_TrayMenu.Add()  ; 分隔线
@@ -704,28 +699,24 @@ ShowHelp(*) {
     helpText .= "
     (
 
-    Hotkey Description:
-    Function Key        - Toggle corresponding application display/hide
-    Ctrl+Function Key   - Start a new application instance
-    F12                 - Show all application status
-    Ctrl+Alt+H          - Show this help
-    Ctrl+Alt+Q          - Exit script
+Hotkey Description:
+    Hotkey        - Toggle corresponding application display/hide/launch
 
-    Function Description:
-    • The first press of the function key will start the corresponding application
+Function Description:
+    • The first press of the hotkey will start the corresponding application
     • Single window: Minimize when active, activate when inactive
     • Multi-window: Cycle through each window, minimize all when on the last window
-    • Support for multi-path automatic detection startup
     • Display window titles and numbers for easy identification
 
-    Multi-window cycle logic:
+Multi-window cycle logic:
     1. First press: Activate the first window
     2. Continue pressing: Activate subsequent windows in turn
     3. Last window: Minimize all windows
     4. Press again: Start again from the first window
 
-    Adding new applications:
-    Simply add new application configurations to the Apps section at the beginning of the script or in the config file!
+Adding new applications:
+    Simply add new application configurations to the Apps section at the beginning of the script!
+    You can also modify configuration file which can be located by right-clicking the 'Open Configuration file'.
 
     Right-clicking the system tray icon provides access to more features.
     )"
@@ -742,10 +733,11 @@ GenerateStartupNotification()
 GenerateStartupNotification() {
     appList := ""
     for appKey, appConfig in Apps {
-        if (appList != "")
-            appList .= ", "
-        appList .= appConfig.hotkey . ":" . appConfig.name
+        if IsDisabled(appConfig) {
+            continue
+        }
+        appList .= "- " . appConfig.hotkey . ":" . appConfig.name . "`n"
     }
 
-    ShowNotification(SCRIPT_NAME . " is running - " . appList)
+    MsgBox(SCRIPT_NAME . " is running `n`n" . appList, "Startup Notification - " . SCRIPT_NAME, "T15")
 }
