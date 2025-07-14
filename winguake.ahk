@@ -288,6 +288,10 @@ ValidateAllConfigs() {
             Apps.Delete(appName)  ; 删除有问题的应用配置
         } else {
             ; 记录有效的应用
+            ; 跳过禁用的应用配置
+            if (IsDisabled(appConfig)) {
+                continue
+            }
             if registeredHotkeys.Has(appConfig.hotkey) {
                 if !allIssues.Has("HotKey Conflict!") {
                     allIssues["HotKey Conflict!"] := []
