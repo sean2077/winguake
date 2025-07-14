@@ -1,3 +1,10 @@
+## [1.0.4](https://github.com/sean2077/winguake/compare/v1.0.3...v1.0.4) (2025-07-14)
+
+
+### Bug Fixes
+
+* skip disabled app config validation ([490528d](https://github.com/sean2077/winguake/commit/490528d211d90deaedc688d2453b5e96eea9c966))
+
 ## [1.0.3](https://github.com/sean2077/winguake/compare/v1.0.2...v1.0.3) (2025-07-11)
 
 
