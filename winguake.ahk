@@ -29,7 +29,8 @@ Apps["Terminal"] := {
         "wt.exe",
         "C:\Users\" . A_UserName . "\AppData\Local\Microsoft\WindowsApps\wt.exe"
     ],
-    name: "Windows Terminal"         ; 显示名称
+    name: "Windows Terminal",        ; 显示名称
+    maximize: true                   ; 启动时最大化
 }
 
 
@@ -41,7 +42,8 @@ Apps["VSCode"] := {
         "code",
         "C:\Users\" . A_UserName . "\AppData\Local\Programs\Microsoft VS Code\Code.exe"
     ],
-    name: "Visual Studio Code"
+    name: "Visual Studio Code",
+    maximize: true  ; 默认启动时最大化
 }
 
 Apps["Chrome"] := {
@@ -53,7 +55,8 @@ Apps["Chrome"] := {
         "C:\Program Files\Google\Chrome\Application\chrome.exe",
         "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"
     ],
-    name: "Google Chrome"
+    name: "Google Chrome",
+    maximize: true  ; 默认启动时最大化
 }
 
 Apps["Obsidian"] := {
@@ -581,6 +584,82 @@ HandleMultipleWindows(appKey, windows, appConfig) {
     }
 }
 
+; 备用最大化方案（用于不支持启动时最大化的应用）
+BackupMaximizeWindow(appKey) {
+    if (!Apps.Has(appKey)) {
+        return
+    }
+
+    appConfig := Apps[appKey]
+    windows := GetAppWindows(appConfig.exe)
+
+    if (windows.Length > 0) {
+        firstWindow := windows[1]
+        try {
+            ; 检查窗口是否已经是最大化状态
+            currentState := WinGetMinMax(firstWindow)
+            windowTitle := WinGetTitle(firstWindow)
+
+            if (currentState != 1) {  ; 如果不是最大化状态
+                WinActivate(firstWindow)
+                Sleep(100)
+                WinMaximize(firstWindow)
+
+                ; 验证最大化是否成功
+                Sleep(100)
+                newState := WinGetMinMax(firstWindow)
+                if (newState = 1) {
+                    ShowNotification("✓ " . appConfig.name . " maximized (backup method)")
+                } else {
+                    ShowNotification("⚠ " . appConfig.name . " backup maximize failed")
+                }
+            } else {
+                ; 已经是最大化状态
+                ShowNotification("✓ " . appConfig.name . " already maximized")
+            }
+        }
+        catch as e {
+            ; 静默失败，不显示错误信息
+        }
+    }
+}
+
+; 简单的窗口最大化备用方案（适用于不支持启动时最大化的应用）
+WaitAndMaximizeWindow(appKey) {
+    if (!Apps.Has(appKey)) {
+        return
+    }
+
+    appConfig := Apps[appKey]
+    windows := GetAppWindows(appConfig.exe)
+
+    if (windows.Length > 0) {
+        firstWindow := windows[1]
+        try {
+            WinActivate(firstWindow)
+            Sleep(100)
+            WinMaximize(firstWindow)
+            ShowNotification("✓ " . appConfig.name . " maximized as fallback")
+        }
+        catch as e {
+            ShowNotification("Failed to maximize " . appConfig.name . ": " . e.message)
+        }
+    } else {
+        ; 简单重试一次
+        static retryCount := Map()
+        if (!retryCount.Has(appKey)) {
+            retryCount[appKey] := 0
+        }
+
+        retryCount[appKey]++
+        if (retryCount[appKey] < 2) {
+            SetTimer(() => WaitAndMaximizeWindow(appKey), -2000)
+        } else {
+            retryCount.Delete(appKey)
+        }
+    }
+}
+
 ; 启动应用程序
 LaunchApp(appKey, *) {
     if (!Apps.Has(appKey)) {
@@ -595,9 +674,19 @@ LaunchApp(appKey, *) {
     for path in appConfig.launchPaths {
         try
         {
-            Run(path)
+            ; 如果设置了自动最大化，直接以最大化状态启动
+            if (appConfig.HasOwnProp("maximize") && appConfig.maximize) {
+                Run(path, , "Max")  ; 第三个参数 "Max" 表示最大化启动
+                ShowNotification("Starting " . appConfig.name . " (maximized)...")
+
+                ; 添加备用方案：如果应用不支持启动时最大化，2秒后尝试手动最大化
+                SetTimer(() => BackupMaximizeWindow(appKey), -2000)
+            } else {
+                Run(path)
+                ShowNotification("Starting " . appConfig.name . "...")
+            }
+
             launched := true
-            ShowNotification("Starting " . appConfig.name . "...")
             AppWindowIndex[appKey] := 0  ; Reset index
             break
         }

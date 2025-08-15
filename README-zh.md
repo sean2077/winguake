@@ -6,6 +6,7 @@ winguake 是一款让你可以在 Windows 下通过热键 显示/隐藏/启动�
 
 - 通过热键**显示/隐藏/启动（几乎）任意应用窗口**
 - 通过热键**在多应用或同应用的多窗口之间切换**
+- **启动应用时自动最大化窗口**，充分利用屏幕空间
 
 ## 1. 动机
 
@@ -32,11 +33,11 @@ AHK 脚本也可以 [编译](https://wyagd001.github.io/v2/docs/Scripts.htm#ahk
 
 ## 3. 使用
 
-目前 winguake 内置如下几个应用的热键配置，如需修改可以直接改 `winguake.ahk` 内的配置部分，也可修改外部 `winguake.ini` 配置文件（见 [配置](#配置)）。
+目前 winguake 内置如下几个应用的热键配置，如需修改可以直接改 `winguake.ahk` 内的配置部分，也可修改外部 `winguake.ini` 配置文件（见 [配置](#配置)）。默认情况下，部分应用（如 VSCode、Chrome）已启用启动时自动最大化功能。
 
-- F3 - Windows 终端
-- F4 - VSCode
-- F5 - Chrome
+- F3 - Windows 终端（启用自动最大化）
+- F4 - VSCode（启用自动最大化）
+- F5 - Chrome（启用自动最大化）
 - F6 - Obsidian
 
 
@@ -62,6 +63,7 @@ winguake 会自动读取 `winguake.ahk` 或 `winguake.exe` 同目录下的配置
 可选关键字：
 
 - disable：是否禁用该应用，可用于覆盖默认配置的应用
+- maximize：是否在启动应用时最大化窗口（默认：false）
 
 > ⚠️ 注意：不可在行末尾添加注释，如需添加，请添加在上一行
 
@@ -74,10 +76,44 @@ exe=notepad.exe
 launchCmd=notepad
 name=记事本
 launchPaths=notepad.exe|C:\Windows\System32\notepad.exe
+maximize=true
 ; set disable=false if you want to register this app
 disable=true
 
 ```
+
+### 3.3. 启动时最大化功能
+
+winguake 支持在首次启动应用程序时自动最大化窗口。此功能使用 Windows 原生的窗口启动参数，具有最佳的兼容性和性能。
+
+**工作原理：**
+- 当为应用程序设置 `maximize=true` 时，将使用 `Run(path, , "Max")` 启动
+- 直接以最大化状态启动应用程序，无需等待
+- 如果应用程序不支持启动时最大化，备用方法会在启动后 2 秒尝试最大化窗口
+
+**配置方法：**
+在 `winguake.ini` 的任意应用程序部分添加 `maximize=true`：
+
+```ini
+[VSCode]
+hotkey=F4
+exe=Code.exe
+launchCmd=code
+name=Visual Studio Code
+maximize=true
+
+[Chrome]
+hotkey=F5
+exe=chrome.exe
+launchCmd=chrome
+name=Google Chrome
+maximize=true
+```
+
+**行为说明：**
+- **新启动应用**：设置了 `maximize=true` 的应用会以最大化状态启动
+- **切换到已存在的窗口**：保持窗口原有状态（不会强制最大化）
+- **最小化的窗口**：会恢复窗口但不会强制最大化，除非它们原本就是最大化状态
 
 常用的快捷键符号：
 

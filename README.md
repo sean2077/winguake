@@ -6,6 +6,7 @@ winguake is a lightweight tool for Windows that allows you to show, hide, or lau
 
 * Use hotkeys to **show, hide, or launch (almost) any application window**
 * Use hotkeys to **switch between multiple applications or multiple windows of the same application**
+* **Automatically maximize windows when launching applications** for optimal screen utilization
 
 ## 1. Motivation
 
@@ -31,11 +32,11 @@ AHK scripts can also be [compiled](https://wyagd001.github.io/v2/docs/Scripts.ht
 
 ## 3. Usage
 
-winguake has hotkey configurations for the following applications by default. You can modify these in the `winguake.ahk` script or the external `winguake.ini` configuration file (see [Configuration](#configuration)).
+winguake has hotkey configurations for the following applications by default. You can modify these in the `winguake.ahk` script or the external `winguake.ini` configuration file (see [Configuration](#configuration)). By default, some applications (like VSCode, Chrome) have automatic window maximization enabled on launch.
 
-* F3 - Windows Terminal
-* F4 - VSCode
-* F5 - Chrome
+* F3 - Windows Terminal (with auto-maximize)
+* F4 - VSCode (with auto-maximize)
+* F5 - Chrome (with auto-maximize)  
 * F6 - Obsidian
 
 For more help, you can access it from the tray menu under Help.
@@ -60,6 +61,7 @@ Required Keywords:
 Optional Keywords:
 
 * `disable`: Whether to disable the application. This can be used to override the default configuration.
+* `maximize`: Whether to maximize the window when launching the application (default: false)
 
 > ⚠️ Note: Do not add comments at the end of a line. If you want to add a comment, do so on the previous line.
 
@@ -72,9 +74,43 @@ exe=notepad.exe
 launchCmd=notepad
 name=Notepad
 launchPaths=notepad.exe|C:\Windows\System32\notepad.exe
+maximize=true
 ; set disable=false if you want to register this app
 disable=true
 ```
+
+### 3.3. Maximize on Launch Feature
+
+winguake supports automatically maximizing application windows when they are launched for the first time. This feature uses Windows' native window launch parameters for optimal compatibility and performance.
+
+**How it works:**
+- When `maximize=true` is set for an application, it will be launched using `Run(path, , "Max")`
+- This directly starts the application in maximized state without needing to wait
+- If the application doesn't support launch-time maximization, a backup method will attempt to maximize the window 2 seconds after launch
+
+**Configuration:**
+Add `maximize=true` to any application section in your `winguake.ini`:
+
+```ini
+[VSCode]
+hotkey=F4
+exe=Code.exe
+launchCmd=code
+name=Visual Studio Code
+maximize=true
+
+[Chrome]
+hotkey=F5
+exe=chrome.exe
+launchCmd=chrome
+name=Google Chrome
+maximize=true
+```
+
+**Behavior:**
+- **New launches**: Applications with `maximize=true` will start maximized
+- **Switching to existing windows**: Window states are preserved (no forced maximization)
+- **Minimized windows**: Will be restored but not forced to maximize unless they were already maximized
 
 You can use the following modifier symbols to define hotkeys:
 
