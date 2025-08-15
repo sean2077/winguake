@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/sean2077/winguake/compare/v1.0.4...v1.1.0) (2025-08-15)
+
+
+### Features
+
+* add auto-maximize feature for application launch ([5781212](https://github.com/sean2077/winguake/commit/57812121692823fb5d58b228155f0885ae88364a))
+
 ## [1.0.4](https://github.com/sean2077/winguake/compare/v1.0.3...v1.0.4) (2025-07-14)
 
 
