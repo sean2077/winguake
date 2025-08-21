@@ -701,7 +701,7 @@ LaunchApp(appKey, *) {
 }
 
 ; 显示通知
-ShowNotification(message, delay := 1500) {
+ShowNotification(message, delay := 500) {
     ToolTip(message)
     SetTimer(() => ToolTip(), -delay)
 }
