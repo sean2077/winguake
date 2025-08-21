@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/sean2077/winguake/compare/v1.1.0...v1.1.1) (2025-08-21)
+
+
+### Bug Fixes
+
+* reduce notification display delay to 500ms ([db52e21](https://github.com/sean2077/winguake/commit/db52e21b5b420a4ea80755b1536fb57b3a8c5ae7))
+
 # [1.1.0](https://github.com/sean2077/winguake/compare/v1.0.4...v1.1.0) (2025-08-15)
 
 
