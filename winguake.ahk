@@ -624,42 +624,6 @@ BackupMaximizeWindow(appKey) {
     }
 }
 
-; 简单的窗口最大化备用方案（适用于不支持启动时最大化的应用）
-WaitAndMaximizeWindow(appKey) {
-    if (!Apps.Has(appKey)) {
-        return
-    }
-
-    appConfig := Apps[appKey]
-    windows := GetAppWindows(appConfig.exe)
-
-    if (windows.Length > 0) {
-        firstWindow := windows[1]
-        try {
-            WinActivate(firstWindow)
-            Sleep(100)
-            WinMaximize(firstWindow)
-            ShowNotification("✓ " . appConfig.name . " maximized as fallback")
-        }
-        catch as e {
-            ShowNotification("Failed to maximize " . appConfig.name . ": " . e.message)
-        }
-    } else {
-        ; 简单重试一次
-        static retryCount := Map()
-        if (!retryCount.Has(appKey)) {
-            retryCount[appKey] := 0
-        }
-
-        retryCount[appKey]++
-        if (retryCount[appKey] < 2) {
-            SetTimer(() => WaitAndMaximizeWindow(appKey), -2000)
-        } else {
-            retryCount.Delete(appKey)
-        }
-    }
-}
-
 ; 启动应用程序
 LaunchApp(appKey, *) {
     if (!Apps.Has(appKey)) {
