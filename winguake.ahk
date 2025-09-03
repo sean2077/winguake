@@ -3,7 +3,7 @@
 ; AutoHotkey v2 Script
 ; Author：Sean2077
 
-VERSION := "1.1.1"
+VERSION := "1.2.0"
 SCRIPT_NAME := "winguake(v" . VERSION . ")"
 SCRIPT_FULLNAME := "Windows Quake - Multi-App Manager (v" . VERSION . ")"
 

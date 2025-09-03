@@ -1,3 +1,15 @@
+# [1.2.0](https://github.com/sean2077/winguake/compare/v1.1.1...v1.2.0) (2025-09-03)
+
+
+### Bug Fixes
+
+* add sorting functionality for application configurations by hotkey ([551eab0](https://github.com/sean2077/winguake/commit/551eab0adfc5c536ead08d95e93a089a19a670af))
+
+
+### Features
+
+* add multi-window cycling behavior configuration ([0471da9](https://github.com/sean2077/winguake/commit/0471da9e0b79613a53fcb902ec5eb1df4d0ae120))
+
 ## [1.1.1](https://github.com/sean2077/winguake/compare/v1.1.0...v1.1.1) (2025-08-21)
 
 
