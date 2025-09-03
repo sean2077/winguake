@@ -590,45 +590,44 @@ ShowConfigEditor() {
 
 ; 生成配置文本（INI格式）
 GenerateConfigText() {
-    configText := "; " . Lang.SCRIPT_FULLNAME . " Configuration File`n"
-    configText .= "; " . Lang.CONFIG_FORMAT_DESC . "`n"
-    configText .= "; " . Lang.CONFIG_SECTION_DESC . "`n"
-    configText .= "; " . Lang.CONFIG_OPTIONS_DESC . "`n"
-    configText .= "; " . Lang.CONFIG_PATHS_DESC . "`n`n"
+    configText := "; " . Lang.SCRIPT_FULLNAME . " Configuration File`r`n"
+    configText .= "; " . Lang.CONFIG_FORMAT_DESC . "`r`n"
+    configText .= "; " . Lang.CONFIG_SECTION_DESC . "`r`n"
+    configText .= "; " . Lang.CONFIG_OPTIONS_DESC . "`r`n"
+    configText .= "; " . Lang.CONFIG_PATHS_DESC . "`r`n`r`n"
 
     sortedApps := GetSortedApps(true)  ; 包含禁用的应用
     for index, appData in sortedApps {
         appName := appData.key
         appConfig := appData.config
 
-        configText .= "[" . appName . "]`n"
+        configText .= "[" . appName . "]`r`n"
 
         ; 基本配置
-        configText .= "hotkey=" . appConfig.hotkey . "`n"
-        configText .= "exe=" . appConfig.exe . "`n"
-        configText .= "launchCmd=" . appConfig.launchCmd . "`n"
-        configText .= "name=" . appConfig.name . "`n"
+        configText .= "hotkey=" . (appConfig.HasOwnProp("hotkey") ? appConfig.hotkey : "") . "`r`n"
+        configText .= "exe=" . (appConfig.HasOwnProp("exe") ? appConfig.exe : "") . "`r`n"
+        configText .= "launchCmd=" . (appConfig.HasOwnProp("launchCmd") ? appConfig.launchCmd : "") . "`r`n"
+        configText .= "name=" . (appConfig.HasOwnProp("name") ? appConfig.name : appName) . "`r`n"
 
         ; 启动路径（转换为 | 分隔的字符串）
-        if (appConfig.launchPaths.Length > 0) {
+        if (appConfig.HasOwnProp("launchPaths") && appConfig.launchPaths.Length > 0) {
             pathStr := ""
             for i, path in appConfig.launchPaths {
                 pathStr .= path
                 if (i < appConfig.launchPaths.Length)
                     pathStr .= "|"
             }
-            configText .= "launchPaths=" . pathStr . "`n"
+            configText .= "launchPaths=" . pathStr . "`r`n"
+        } else {
+            configText .= "launchPaths=`r`n"
         }
 
-        ; 可选配置
-        if (appConfig.HasOwnProp("maximize"))
-            configText .= "maximize=" . (appConfig.maximize ? "true" : "false") . "`n"
-        if (appConfig.HasOwnProp("cycleContinuous"))
-            configText .= "cycleContinuous=" . (appConfig.cycleContinuous ? "true" : "false") . "`n"
-        if (appConfig.HasOwnProp("disable"))
-            configText .= "disable=" . (appConfig.disable ? "true" : "false") . "`n"
+        ; 可选配置（确保所有项目都包含）
+        configText .= "maximize=" . (appConfig.HasOwnProp("maximize") ? (appConfig.maximize ? "true" : "false") : "false") . "`r`n"
+        configText .= "cycleContinuous=" . (appConfig.HasOwnProp("cycleContinuous") ? (appConfig.cycleContinuous ? "true" : "false") : "true") . "`r`n"
+        configText .= "disable=" . (appConfig.HasOwnProp("disable") ? (appConfig.disable ? "true" : "false") : "false") . "`r`n"
 
-        configText .= "`n"
+        configText .= "`r`n"
     }
 
     return configText
@@ -673,6 +672,7 @@ SaveConfigFromEditor(editCtrl, configGui) {
 ResetConfigEditor(editCtrl) {
     result := MsgBox(Lang.CONFIG_RESET_CONFIRM, Lang.CONFIG_TITLE . " - " . SCRIPT_NAME, 4)
     if (result = "Yes") {
+        ; 重新生成配置文本（基于当前内存中的配置）
         editCtrl.Text := GenerateConfigText()
     }
 }
