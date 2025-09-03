@@ -1,12 +1,144 @@
 #Requires AutoHotkey v2.0
-; Windows Quake - Multi-App Manager
+; Windows Quake - Quick Window Switcher
 ; AutoHotkey v2 Script
 ; Author：Sean2077
 
 VERSION := "1.2.0"
 SCRIPT_NAME := "winguake(v" . VERSION . ")"
-SCRIPT_FULLNAME := "Windows Quake - Multi-App Manager (v" . VERSION . ")"
 
+; ==================== 多语言支持 ====================
+; 检测系统语言并设置对应的语言包
+SYSTEM_LANG := A_Language
+IS_CHINESE := (SYSTEM_LANG = "0804" || SYSTEM_LANG = "0404" || SYSTEM_LANG = "0C04" || SYSTEM_LANG = "1004" || SYSTEM_LANG = "1404")
+
+; 语言包
+Lang := {}
+
+if (IS_CHINESE) {
+    ; 中文语言包
+    Lang.SCRIPT_FULLNAME := "Windows Quake - 快速窗口切换器 (v" . VERSION . ")"
+    Lang.CONFIG_EMPTY := "配置文件为空"
+    Lang.CONFIG_SUCCESS := "读取配置文件成功 🎉🎉🎉"
+    Lang.CONFIG_FAILED := "读取配置文件失败 💩💩💩"
+    Lang.CONFIG_NOT_FOUND := "未找到配置文件，使用默认配置"
+    Lang.CONFIG_VALIDATION_PASSED := "所有配置验证通过"
+    Lang.CONFIG_VALIDATION_ISSUES := "配置验证发现问题：`n`n"
+    Lang.CONFIG_FILE_MISSING := "未找到配置文件"
+    Lang.CONFIG_FILE_CREATE_PROMPT := "`n是否要创建新的配置文件？"
+    Lang.HOTKEY_REGISTER_FAILED := "热键注册失败"
+    Lang.APP_NOT_FOUND := "未找到应用"
+    Lang.APP_MINIMIZED := "已最小化"
+    Lang.APP_ACTIVATED := "已激活"
+    Lang.APP_ALL_MINIMIZED := "所有窗口已最小化"
+    Lang.APP_STARTING := "正在启动"
+    Lang.APP_STARTING_MAXIMIZED := "正在启动（最大化）"
+    Lang.APP_MAXIMIZED := "已最大化"
+    Lang.APP_MAXIMIZED_BACKUP := "已最大化（备用方法）"
+    Lang.APP_MAXIMIZED_FAILED := "备用最大化失败"
+    Lang.APP_ALREADY_MAXIMIZED := "已经是最大化状态"
+    Lang.LAUNCH_FAILED := "启动失败"
+    Lang.LAUNCH_FAILED_MSG := "无法启动应用程序。`n请确保应用程序已正确安装。"
+    Lang.STATUS_TITLE := "应用状态"
+    Lang.STATUS_HEADER := "Windows Quake - 应用程序状态：`n`n"
+    Lang.STATUS_WINDOWS := "个窗口"
+    Lang.STATUS_ACTIVE := "活动"
+    Lang.STATUS_MINIMIZED := "最小化"
+    Lang.STATUS_NOT_RUNNING := "未运行"
+    Lang.MENU_TOGGLE := "切换"
+    Lang.MENU_SHOW_STATUS := "显示应用状态"
+    Lang.MENU_SHOW_CONFIG := "显示当前应用配置状态"
+    Lang.MENU_OPEN_DIR := "打开脚本和配置文件目录"
+    Lang.MENU_OPEN_CONFIG := "打开配置文件"
+    Lang.MENU_HELP := "帮助"
+    Lang.MENU_EXIT := "退出"
+    Lang.HELP_TITLE := "帮助"
+    Lang.HELP_CURRENT_APPS := "`n`n当前管理的应用程序：`n"
+    Lang.HELP_HOTKEY_DESC := "`n`n热键说明：`n    热键        - 切换对应应用程序的显示/隐藏/启动"
+    Lang.HELP_FUNCTION_DESC := "`n`n功能说明：`n    • 首次按下热键将启动对应的应用程序`n    • 单窗口：活动时最小化，非活动时激活`n    • 多窗口：提供两种循环模式（可通过 cycleContinuous 选项配置）`n    • 显示窗口标题和编号，便于识别"
+    Lang.HELP_CYCLE_LOGIC := "`n`n多窗口循环逻辑：`n    1. 首次按下：激活第一个窗口`n    2. 继续按下：依次激活后续窗口`n    3. 最后窗口行为（取决于 cycleContinuous 设置）：`n       - cycleContinuous=true（默认）：跳回第一个窗口并继续循环`n       - cycleContinuous=false：最小化所有窗口`n    4. 所有窗口最小化时：再次按下从第一个窗口开始"
+    Lang.HELP_CONFIG_OPTIONS := "`n`n配置选项：`n    • cycleContinuous: true/false - 控制多窗口循环行为`n    • maximize: true/false - 是否在启动时最大化窗口`n    • disable: true/false - 是否禁用此应用程序"
+    Lang.HELP_ADD_APPS := "`n`n添加新应用程序：`n    只需在脚本开头的 Apps 部分添加新的应用程序配置即可！`n    您也可以修改配置文件，通过右键单击`"打开配置文件`"找到配置文件位置。`n`n    右键单击系统托盘图标可访问更多功能。"
+    Lang.CONFIG_TITLE := "当前配置"
+    Lang.CONFIG_HEADER := "当前应用配置（有效部分）：`n`n"
+    Lang.CONFIG_HOTKEY := "  热键："
+    Lang.CONFIG_PROCESS := "  进程名："
+    Lang.CONFIG_LAUNCH_CMD := "  启动命令："
+    Lang.CONFIG_DISPLAY_NAME := "  显示名称："
+    Lang.CONFIG_LAUNCH_PATHS := "  启动路径："
+    Lang.CONFIG_DISABLED := "  已禁用："
+    Lang.CONFIG_MAXIMIZE := "  启动时最大化："
+    Lang.CONFIG_CYCLE := "  持续循环："
+    Lang.YES := "是"
+    Lang.NO := "否"
+    Lang.STARTUP_TITLE := "启动通知"
+    Lang.STARTUP_RUNNING := "正在运行"
+    Lang.VALIDATION_TITLE := "配置验证"
+    Lang.UPDATED := "已更新"
+    Lang.APPLICATIONS := "个应用程序"
+    Lang.NO_UPDATES := "未找到有效的配置更新"
+} else {
+    ; 英文语言包（默认）
+    Lang.SCRIPT_FULLNAME := "Windows Quake - Quick Window Switcher (v" . VERSION . ")"
+    Lang.CONFIG_EMPTY := "configuration is empty"
+    Lang.CONFIG_SUCCESS := "Read config file successful 🎉🎉🎉"
+    Lang.CONFIG_FAILED := "Read config file failed 💩💩💩"
+    Lang.CONFIG_NOT_FOUND := "Config file not found, use default"
+    Lang.CONFIG_VALIDATION_PASSED := "All configuration validation passed"
+    Lang.CONFIG_VALIDATION_ISSUES := "Configuration validation found issues:`n`n"
+    Lang.CONFIG_FILE_MISSING := "Configuration file not found"
+    Lang.CONFIG_FILE_CREATE_PROMPT := "`nDo you want to create a new one?"
+    Lang.HOTKEY_REGISTER_FAILED := "Failed to register hotkey"
+    Lang.APP_NOT_FOUND := "Not found"
+    Lang.APP_MINIMIZED := "is minimized"
+    Lang.APP_ACTIVATED := "is activated"
+    Lang.APP_ALL_MINIMIZED := "all windows are minimized"
+    Lang.APP_STARTING := "Starting"
+    Lang.APP_STARTING_MAXIMIZED := "Starting (maximized)"
+    Lang.APP_MAXIMIZED := "maximized"
+    Lang.APP_MAXIMIZED_BACKUP := "maximized (backup method)"
+    Lang.APP_MAXIMIZED_FAILED := "backup maximize failed"
+    Lang.APP_ALREADY_MAXIMIZED := "already maximized"
+    Lang.LAUNCH_FAILED := "Launch Failed"
+    Lang.LAUNCH_FAILED_MSG := "Unable to start application.`nPlease ensure the application is installed correctly."
+    Lang.STATUS_TITLE := "Application Status"
+    Lang.STATUS_HEADER := "Windows Quake - application status:`n`n"
+    Lang.STATUS_WINDOWS := "windows"
+    Lang.STATUS_ACTIVE := "Active"
+    Lang.STATUS_MINIMIZED := "Minimized"
+    Lang.STATUS_NOT_RUNNING := "Not Running"
+    Lang.MENU_TOGGLE := "Toggle"
+    Lang.MENU_SHOW_STATUS := "Show app status"
+    Lang.MENU_SHOW_CONFIG := "Show current app config status"
+    Lang.MENU_OPEN_DIR := "Open directory of script and config file"
+    Lang.MENU_OPEN_CONFIG := "Open configuration file"
+    Lang.MENU_HELP := "Help"
+    Lang.MENU_EXIT := "Exit"
+    Lang.HELP_TITLE := "Help"
+    Lang.HELP_CURRENT_APPS := "`n`nCurrent managed applications:`n"
+    Lang.HELP_HOTKEY_DESC := "`n`nHotkey Description:`n    Hotkey        - Toggle corresponding application display/hide/launch"
+    Lang.HELP_FUNCTION_DESC := "`n`nFunction Description:`n    • The first press of the hotkey will start the corresponding application`n    • Single window: Minimize when active, activate when inactive`n    • Multi-window: Two cycle modes available (configurable via cycleContinuous option)`n    • Display window titles and numbers for easy identification"
+    Lang.HELP_CYCLE_LOGIC := "`n`nMulti-window cycle logic:`n    1. First press: Activate the first window`n    2. Continue pressing: Activate subsequent windows in turn`n    3. Last window behavior (depends on cycleContinuous setting):`n       - cycleContinuous=true (default): Jump back to first window and continue cycling`n       - cycleContinuous=false: Minimize all windows`n    4. When all windows minimized: Press again to start from the first window"
+    Lang.HELP_CONFIG_OPTIONS := "`n`nConfiguration options:`n    • cycleContinuous: true/false - Controls multi-window cycling behavior`n    • maximize: true/false - Whether to maximize window on startup`n    • disable: true/false - Whether to disable this application"
+    Lang.HELP_ADD_APPS := "`n`nAdding new applications:`n    Simply add new application configurations to the Apps section at the beginning of the script!`n    You can also modify configuration file which can be located by right-clicking the `"Open Configuration file`".`n`n    Right-clicking the system tray icon provides access to more features."
+    Lang.CONFIG_TITLE := "Current Configuration"
+    Lang.CONFIG_HEADER := "Current application configuration (valid parts):`n`n"
+    Lang.CONFIG_HOTKEY := "  Hotkey: "
+    Lang.CONFIG_PROCESS := "  Process Name: "
+    Lang.CONFIG_LAUNCH_CMD := "  Launch Command: "
+    Lang.CONFIG_DISPLAY_NAME := "  Display Name: "
+    Lang.CONFIG_LAUNCH_PATHS := "  Launch Paths: "
+    Lang.CONFIG_DISABLED := "  Disabled: "
+    Lang.CONFIG_MAXIMIZE := "  Maximize on Start: "
+    Lang.CONFIG_CYCLE := "  Cycle Continuous: "
+    Lang.YES := "Yes"
+    Lang.NO := "No"
+    Lang.STARTUP_TITLE := "Startup Notification"
+    Lang.STARTUP_RUNNING := "is running"
+    Lang.VALIDATION_TITLE := "Configuration Validation"
+    Lang.UPDATED := "Updated: "
+    Lang.APPLICATIONS := " applications"
+    Lang.NO_UPDATES := "No valid configuration updates found"
+}
 
 ; 设置脚本为单实例运行
 #SingleInstance Force
@@ -109,7 +241,7 @@ LoadConfig(configFile) {
     ; 获取配置文件中的所有 Section
     allSections := IniRead(configFile)
     if (allSections = "") {
-        ToolTip("configuration is empty", , , 1)
+        ToolTip(Lang.CONFIG_EMPTY, , , 1)
         SetTimer(() => ToolTip("", , , 1), -2000)
         return true
     }
@@ -228,14 +360,14 @@ LoadConfig(configFile) {
 
     ; 显示更新结果
     if (updatedApps.Length > 0) {
-        message := "Updated: " . updatedApps.Length . " applications`n"
+        message := Lang.UPDATED . updatedApps.Length . Lang.APPLICATIONS . "`n"
         for index, appName in updatedApps {
             message .= "- " . appName . "`n"
         }
         ToolTip(message, , , 1)
         SetTimer(() => ToolTip("", , , 1), -3000)
     } else {
-        ToolTip("No valid configuration updates found", , , 1)
+        ToolTip(Lang.NO_UPDATES, , , 1)
         SetTimer(() => ToolTip("", , , 1), -2000)
     }
 
@@ -297,7 +429,7 @@ ValidateAllConfigs() {
     }
 
     if (allIssues.Count > 0) {
-        message := "Configuration validation found issues:`n`n"
+        message := Lang.CONFIG_VALIDATION_ISSUES
         for appName, issues in allIssues {
             message .= "[" . appName . "]`n"
             for index, issue in issues {
@@ -305,14 +437,14 @@ ValidateAllConfigs() {
             }
             message .= "`n"
         }
-        MsgBox(message, "Configuration Validation - " . SCRIPT_NAME, "T15")
+        MsgBox(message, Lang.VALIDATION_TITLE . " - " . SCRIPT_NAME, "T15")
         ; 仅存在热键冲突或有效应用配置为0的情况认为配置失败
         if allIssues.Has("HotKey Conflict!") || Apps.Count = 0
             return false
     }
 
 
-    ToolTip("All configuration validation passed", , , 1)
+    ToolTip(Lang.CONFIG_VALIDATION_PASSED, , , 1)
     SetTimer(() => ToolTip("", , , 1), -2000)
     return true
 
@@ -329,7 +461,7 @@ OpenConfigFile() {
     ; 判断是否存在配置文件
     if !FileExist(configFile) {
         ; 如果配置文件不存在，提示用户是否创建
-        MsgBoxResult := MsgBox("Configuration file not found: " . configFile . "`nDo you want to create a new one?", "Configuration File Missing - " . SCRIPT_NAME, 4)
+        MsgBoxResult := MsgBox(Lang.CONFIG_FILE_MISSING . ": " . configFile . Lang.CONFIG_FILE_CREATE_PROMPT, Lang.CONFIG_FILE_MISSING . " - " . SCRIPT_NAME, 4)
         if (MsgBoxResult = "No") {
             return  ; 用户选择不创建，直接返回
         }
@@ -342,7 +474,7 @@ OpenConfigFile() {
 
 ; 辅助函数：显示当前配置
 ShowCurrentConfig() {
-    message := "Current application configuration (valid parts):`n`n"
+    message := Lang.CONFIG_HEADER
 
     sortedApps := GetSortedApps(true)  ; 包含禁用的应用
     for index, appData in sortedApps {
@@ -350,11 +482,11 @@ ShowCurrentConfig() {
         appConfig := appData.config
 
         message .= "[" . appName . "]`n"
-        message .= "  Hotkey: " . appConfig.hotkey . "`n"
-        message .= "  Process Name: " . appConfig.exe . "`n"
-        message .= "  Launch Command: " . appConfig.launchCmd . "`n"
-        message .= "  Display Name: " . appConfig.name . "`n"
-        message .= "  Launch Paths: "
+        message .= Lang.CONFIG_HOTKEY . appConfig.hotkey . "`n"
+        message .= Lang.CONFIG_PROCESS . appConfig.exe . "`n"
+        message .= Lang.CONFIG_LAUNCH_CMD . appConfig.launchCmd . "`n"
+        message .= Lang.CONFIG_DISPLAY_NAME . appConfig.name . "`n"
+        message .= Lang.CONFIG_LAUNCH_PATHS
 
         if (appConfig.launchPaths.Length > 0) {
             for index, path in appConfig.launchPaths {
@@ -364,14 +496,14 @@ ShowCurrentConfig() {
             }
         }
         message .= "`n"
-        message .= "  Disabled: " . (IsDisabled(appConfig) ? "Yes" : "No") . "`n"
-        message .= "  Maximize on Start: " . (appConfig.HasOwnProp("maximize") && appConfig.maximize ? "Yes" : "No") . "`n"
-        message .= "  Cycle Continuous: " . (appConfig.HasOwnProp("cycleContinuous") && appConfig.cycleContinuous ? "Yes" : "No") . "`n"
+        message .= Lang.CONFIG_DISABLED . (IsDisabled(appConfig) ? Lang.YES : Lang.NO) . "`n"
+        message .= Lang.CONFIG_MAXIMIZE . (appConfig.HasOwnProp("maximize") && appConfig.maximize ? Lang.YES : Lang.NO) . "`n"
+        message .= Lang.CONFIG_CYCLE . (appConfig.HasOwnProp("cycleContinuous") && appConfig.cycleContinuous ? Lang.YES : Lang.NO) . "`n"
         message .= "`n"
     }
 
     ; 使用 MsgBox 显示详细信息
-    MsgBox(message, "Current Configuration - " . SCRIPT_NAME, "T15")
+    MsgBox(message, Lang.CONFIG_TITLE . " - " . SCRIPT_NAME, "T15")
 }
 
 IsDisabled(appConfig) {
@@ -419,14 +551,14 @@ GetSortedApps(includeDisabled := false) {
 configFile := GetConfigFilePath()
 if (FileExist(configFile)) {
     if (LoadConfig(configFile)) {
-        ShowNotification("Read config file: " . configFile . " successful 🎉🎉🎉")
+        ShowNotification(Lang.CONFIG_SUCCESS . ": " . configFile)
     } else {
-        ShowNotification("Read config file: " . configFile . " failed 💩💩💩")
+        ShowNotification(Lang.CONFIG_FAILED . ": " . configFile)
         ; ShowCurrentConfig()
         ExitApp()
     }
 } else {
-    ShowNotification("Config file not found: " . configFile . " use default")
+    ShowNotification(Lang.CONFIG_NOT_FOUND . ": " . configFile)
 }
 
 ; ShowCurrentConfig()
@@ -458,7 +590,7 @@ RegisterHotkeys() {
                 Hotkey(appConfig.hotkey, ToggleApp.Bind(appKey))
             }
             catch as err {
-                ShowNotification("Failed to register hotkey: " . appConfig.hotkey . " - " . err.message)
+                ShowNotification(Lang.HOTKEY_REGISTER_FAILED . ": " . appConfig.hotkey . " - " . err.message)
             }
         }
     }
@@ -523,7 +655,7 @@ IsWindow(hwnd) {
 ; 切换应用程序显示/隐藏（支持多窗口循环）
 ToggleApp(appKey, *) {
     if (!Apps.Has(appKey)) {
-        ShowNotification("Not found: " . appKey)
+        ShowNotification(Lang.APP_NOT_FOUND . ": " . appKey)
         return
     }
 
@@ -544,7 +676,7 @@ ToggleApp(appKey, *) {
         if (WinActive(hwnd)) {
             ; 当前活动窗口 - 最小化
             WinMinimize(hwnd)
-            ShowNotification(appConfig.name . " is minimized")
+            ShowNotification(appConfig.name . " " . Lang.APP_MINIMIZED)
             AppWindowIndex[appKey] := 0  ; 重置索引
         }
         else {
@@ -554,7 +686,7 @@ ToggleApp(appKey, *) {
             }
             WinActivate(hwnd)
             WinShow(hwnd)
-            ShowNotification(appConfig.name . " is activated")
+            ShowNotification(appConfig.name . " " . Lang.APP_ACTIVATED)
             AppWindowIndex[appKey] := 1
         }
         return
@@ -607,7 +739,7 @@ HandleMultipleWindows(appKey, windows, appConfig) {
                     WinMinimize(hwnd)
                 }
             }
-            ShowNotification(appConfig.name . " all windows are minimized (total " . windowCount . ")")
+            ShowNotification(appConfig.name . " " . Lang.APP_ALL_MINIMIZED . " (total " . windowCount . ")")
             AppWindowIndex[appKey] := 0  ; 重置索引
             return
         }
@@ -665,13 +797,13 @@ BackupMaximizeWindow(appKey) {
                 Sleep(100)
                 newState := WinGetMinMax(firstWindow)
                 if (newState = 1) {
-                    ShowNotification("✓ " . appConfig.name . " maximized (backup method)")
+                    ShowNotification("✓ " . appConfig.name . " " . Lang.APP_MAXIMIZED_BACKUP)
                 } else {
-                    ShowNotification("⚠ " . appConfig.name . " backup maximize failed")
+                    ShowNotification("⚠ " . appConfig.name . " " . Lang.APP_MAXIMIZED_FAILED)
                 }
             } else {
                 ; 已经是最大化状态
-                ShowNotification("✓ " . appConfig.name . " already maximized")
+                ShowNotification("✓ " . appConfig.name . " " . Lang.APP_ALREADY_MAXIMIZED)
             }
         }
         catch as e {
@@ -683,7 +815,7 @@ BackupMaximizeWindow(appKey) {
 ; 启动应用程序
 LaunchApp(appKey, *) {
     if (!Apps.Has(appKey)) {
-        ShowNotification("Not found: " . appKey)
+        ShowNotification(Lang.APP_NOT_FOUND . ": " . appKey)
         return
     }
 
@@ -697,13 +829,13 @@ LaunchApp(appKey, *) {
             ; 如果设置了自动最大化，直接以最大化状态启动
             if (appConfig.HasOwnProp("maximize") && appConfig.maximize) {
                 Run(path, , "Max")  ; 第三个参数 "Max" 表示最大化启动
-                ShowNotification("Starting " . appConfig.name . " (maximized)...")
+                ShowNotification(Lang.APP_STARTING . " " . appConfig.name . " (" . Lang.APP_MAXIMIZED . ")...")
 
                 ; 添加备用方案：如果应用不支持启动时最大化，2秒后尝试手动最大化
                 SetTimer(() => BackupMaximizeWindow(appKey), -2000)
             } else {
                 Run(path)
-                ShowNotification("Starting " . appConfig.name . "...")
+                ShowNotification(Lang.APP_STARTING . " " . appConfig.name . "...")
             }
 
             launched := true
@@ -716,7 +848,7 @@ LaunchApp(appKey, *) {
     }
 
     if (!launched) {
-        MsgBox("Unable to start " . appConfig.name . "。`nPlease ensure the application is installed correctly。", "Launch Failed - " . SCRIPT_NAME, 0x10)
+        MsgBox(Lang.LAUNCH_FAILED_MSG . " " . appConfig.name, Lang.LAUNCH_FAILED . " - " . SCRIPT_NAME, 0x10)
     }
 }
 
@@ -730,7 +862,7 @@ ShowNotification(message, delay := 500) {
 
 ; 显示应用状态
 ShowAppStatus() {
-    status := "Windows Quake - application status:`n`n"
+    status := Lang.STATUS_HEADER
 
     sortedApps := GetSortedApps(true)  ; 包含禁用的应用
     for index, appData in sortedApps {
@@ -753,22 +885,22 @@ ShowAppStatus() {
                 }
             }
 
-            statusText := windowCount . " windows"
+            statusText := windowCount . " " . Lang.STATUS_WINDOWS
             if (activeCount > 0) {
-                statusText .= " (Active: " . activeCount . ")"
+                statusText .= " (" . Lang.STATUS_ACTIVE . ": " . activeCount . ")"
             }
             if (minimizedCount > 0) {
-                statusText .= " (Minimized: " . minimizedCount . ")"
+                statusText .= " (" . Lang.STATUS_MINIMIZED . ": " . minimizedCount . ")"
             }
 
             status .= appConfig.hotkey . " - " . appConfig.name . ": " . statusText . "`n"
         }
         else {
-            status .= appConfig.hotkey . " - " . appConfig.name . ": Not Running`n"
+            status .= appConfig.hotkey . " - " . appConfig.name . ": " . Lang.STATUS_NOT_RUNNING . "`n"
         }
     }
 
-    MsgBox(status, "Application Status - " . SCRIPT_NAME, 0x1000)
+    MsgBox(status, Lang.STATUS_TITLE . " - " . SCRIPT_NAME, 0x1000)
 }
 
 ; ==================== 系统托盘菜单 ====================
@@ -785,20 +917,20 @@ CreateTrayMenu() {
     for index, appData in sortedApps {
         appKey := appData.key
         appConfig := appData.config
-        A_TrayMenu.Add("Toggle " . appConfig.name . " (" . appConfig.hotkey . ")", ToggleApp.Bind(appKey))
+        A_TrayMenu.Add(Lang.MENU_TOGGLE . " " . appConfig.name . " (" . appConfig.hotkey . ")", ToggleApp.Bind(appKey))
     }
 
     A_TrayMenu.Add()  ; 分隔线
-    A_TrayMenu.Add("Show app status", (*) => ShowAppStatus())
-    A_TrayMenu.Add("Show current app config status", (*) => ShowCurrentConfig())
-    A_TrayMenu.Add("Open directory of script and config file", (*) => OpenScriptDirectory())
-    A_TrayMenu.Add("Open configuration file", (*) => OpenConfigFile())
-    A_TrayMenu.Add("Help", ShowHelp)
+    A_TrayMenu.Add(Lang.MENU_SHOW_STATUS, (*) => ShowAppStatus())
+    A_TrayMenu.Add(Lang.MENU_SHOW_CONFIG, (*) => ShowCurrentConfig())
+    A_TrayMenu.Add(Lang.MENU_OPEN_DIR, (*) => OpenScriptDirectory())
+    A_TrayMenu.Add(Lang.MENU_OPEN_CONFIG, (*) => OpenConfigFile())
+    A_TrayMenu.Add(Lang.MENU_HELP, ShowHelp)
     A_TrayMenu.Add()  ; 分隔线
-    A_TrayMenu.Add("Exit", (*) => ExitApp())
+    A_TrayMenu.Add(Lang.MENU_EXIT, (*) => ExitApp())
 
     ; 设置默认菜单项
-    A_TrayMenu.Default := "Show app status"
+    A_TrayMenu.Default := Lang.MENU_SHOW_STATUS
 }
 
 ; ==================== 帮助和管理 ====================
@@ -806,7 +938,7 @@ CreateTrayMenu() {
 ; 显示帮助
 ShowHelp(*) {
     ; 动态生成帮助文本
-    helpText := SCRIPT_FULLNAME . "`n`nCurrent managed applications:`n"
+    helpText := Lang.SCRIPT_FULLNAME . Lang.HELP_CURRENT_APPS
 
     ; 列出所有配置的应用（按快捷键排序）
     sortedApps := GetSortedApps(true)  ; 包含禁用的应用
@@ -815,39 +947,13 @@ ShowHelp(*) {
         helpText .= appConfig.hotkey . "  - " . appConfig.name . "`n"
     }
 
-    helpText .= "
-    (
+    helpText .= Lang.HELP_HOTKEY_DESC
+    helpText .= Lang.HELP_FUNCTION_DESC
+    helpText .= Lang.HELP_CYCLE_LOGIC
+    helpText .= Lang.HELP_CONFIG_OPTIONS
+    helpText .= Lang.HELP_ADD_APPS
 
-Hotkey Description:
-    Hotkey        - Toggle corresponding application display/hide/launch
-
-Function Description:
-    • The first press of the hotkey will start the corresponding application
-    • Single window: Minimize when active, activate when inactive
-    • Multi-window: Two cycle modes available (configurable via cycleContinuous option)
-    • Display window titles and numbers for easy identification
-
-Multi-window cycle logic:
-    1. First press: Activate the first window
-    2. Continue pressing: Activate subsequent windows in turn
-    3. Last window behavior (depends on cycleContinuous setting):
-       - cycleContinuous=true (default): Jump back to first window and continue cycling
-       - cycleContinuous=false: Minimize all windows
-    4. When all windows minimized: Press again to start from the first window
-
-Configuration options:
-    • cycleContinuous: true/false - Controls multi-window cycling behavior
-    • maximize: true/false - Whether to maximize window on startup
-    • disable: true/false - Whether to disable this application
-
-Adding new applications:
-    Simply add new application configurations to the Apps section at the beginning of the script!
-    You can also modify configuration file which can be located by right-clicking the 'Open Configuration file'.
-
-    Right-clicking the system tray icon provides access to more features.
-    )"
-
-    MsgBox(helpText, "Help - " . SCRIPT_NAME)
+    MsgBox(helpText, Lang.HELP_TITLE . " - " . SCRIPT_NAME)
 }
 
 
@@ -864,5 +970,5 @@ GenerateStartupNotification() {
         appList .= "- " . appConfig.hotkey . ":" . appConfig.name . "`n"
     }
 
-    MsgBox(SCRIPT_NAME . " is running `n`n" . appList, "Startup Notification - " . SCRIPT_NAME, "T15")
+    MsgBox(SCRIPT_NAME . " " . Lang.STARTUP_RUNNING . " `n`n" . appList, Lang.STARTUP_TITLE . " - " . SCRIPT_NAME, "T15")
 }
