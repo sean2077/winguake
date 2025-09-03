@@ -62,6 +62,9 @@ Optional Keywords:
 
 * `disable`: Whether to disable the application. This can be used to override the default configuration.
 * `maximize`: Whether to maximize the window when launching the application (default: false)
+* `cycleContinuous`: Multi-window cycling behavior (default: true)
+  - `true`: Continuously cycle through windows without minimizing (A→B→C→A→B→C...)
+  - `false`: Minimize all windows when reaching the last window
 
 > ⚠️ Note: Do not add comments at the end of a line. If you want to add a comment, do so on the previous line.
 
@@ -78,8 +81,54 @@ maximize=true
 ; set disable=false if you want to register this app
 disable=true
 ```
+[Notepad]
+hotkey=F7
+exe=notepad.exe
+launchCmd=notepad
+name=Notepad
+launchPaths=notepad.exe|C:\Windows\System32\notepad.exe
+maximize=true
+cycleContinuous=false
+; set disable=false if you want to register this app
+disable=true
+```
 
-### 3.3. Maximize on Launch Feature
+### 3.3. Multi-Window Cycling Feature
+
+winguake supports two different cycling behaviors when managing multiple windows of the same application:
+
+**Continuous Cycling Mode (`cycleContinuous=true`, default):**
+- Windows cycle continuously: A → B → C → A → B → C...
+- No interruption by minimizing all windows
+- Ideal for applications where you frequently switch between multiple windows
+
+**Traditional Mode (`cycleContinuous=false`):**
+- Windows cycle with reset: A → B → C → (minimize all) → A → B → C...
+- After reaching the last window, all windows are minimized
+- Similar to traditional window management behavior
+
+**Configuration:**
+Add `cycleContinuous=true/false` to any application section in your `winguake.ini`:
+
+```ini
+[VSCode]
+hotkey=F4
+exe=Code.exe
+launchCmd=code
+name=Visual Studio Code
+maximize=true
+cycleContinuous=true
+
+[Chrome]
+hotkey=F5
+exe=chrome.exe
+launchCmd=chrome
+name=Google Chrome
+maximize=true
+cycleContinuous=false
+```
+
+### 3.4. Maximize on Launch Feature
 
 winguake supports automatically maximizing application windows when they are launched for the first time. This feature uses Windows' native window launch parameters for optimal compatibility and performance.
 
@@ -105,6 +154,7 @@ exe=chrome.exe
 launchCmd=chrome
 name=Google Chrome
 maximize=true
+cycleContinuous=true
 ```
 
 **Behavior:**

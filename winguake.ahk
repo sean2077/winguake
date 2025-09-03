@@ -30,7 +30,8 @@ Apps["Terminal"] := {
         "C:\Users\" . A_UserName . "\AppData\Local\Microsoft\WindowsApps\wt.exe"
     ],
     name: "Windows Terminal",        ; 显示名称
-    maximize: true                   ; 启动时最大化
+    maximize: true,                  ; 启动时最大化
+    cycleContinuous: true            ; 多窗口循环模式：true=持续循环不最小化，false=循环到最后窗口时最小化所有窗口
 }
 
 
@@ -43,7 +44,8 @@ Apps["VSCode"] := {
         "C:\Users\" . A_UserName . "\AppData\Local\Programs\Microsoft VS Code\Code.exe"
     ],
     name: "Visual Studio Code",
-    maximize: true  ; 默认启动时最大化
+    maximize: true,  ; 默认启动时最大化
+    cycleContinuous: true  ; 多窗口循环模式：持续循环不最小化
 }
 
 Apps["Chrome"] := {
@@ -56,7 +58,8 @@ Apps["Chrome"] := {
         "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"
     ],
     name: "Google Chrome",
-    maximize: true  ; 默认启动时最大化
+    maximize: true,  ; 默认启动时最大化
+    cycleContinuous: true  ; 多窗口循环模式：持续循环不最小化
 }
 
 Apps["Obsidian"] := {
@@ -69,19 +72,6 @@ Apps["Obsidian"] := {
     ],
     name: "Obsidian"
 }
-
-; Apps["Notepad++"] := {
-;     hotkey: "F7",
-;     exe: "notepad++.exe",
-;     launchCmd: "notepad++",
-;     launchPaths: [
-;         "notepad++",
-;         "C:\Program Files\Notepad++\notepad++.exe",
-;         "C:\Program Files (x86)\Notepad++\notepad++.exe"
-;     ],
-;     name: "Notepad++"
-; }
-
 
 ; ==================== 读取配置文件 ====================
 
@@ -371,6 +361,8 @@ ShowCurrentConfig() {
         }
         message .= "`n"
         message .= "  Disabled: " . (IsDisabled(appConfig) ? "Yes" : "No") . "`n"
+        message .= "  Maximize on Start: " . (appConfig.HasOwnProp("maximize") && appConfig.maximize ? "Yes" : "No") . "`n"
+        message .= "  Cycle Continuous: " . (appConfig.HasOwnProp("cycleContinuous") && appConfig.cycleContinuous ? "Yes" : "No") . "`n"
         message .= "`n"
     }
 
@@ -455,6 +447,23 @@ GetAppWindows(exe) {
                 }
             }
         }
+
+        ; 按窗口创建时间排序，确保顺序一致
+        ; 这样可以避免窗口顺序变化导致的问题
+        if (windows.Length > 1) {
+            ; 简单的冒泡排序，按窗口句柄排序（通常反映创建顺序）
+            loop windows.Length - 1 {
+                outer := A_Index
+                loop windows.Length - outer {
+                    inner := A_Index
+                    if (windows[inner] > windows[inner + 1]) {
+                        temp := windows[inner]
+                        windows[inner] := windows[inner + 1]
+                        windows[inner + 1] := temp
+                    }
+                }
+            }
+        }
     }
     catch {
         ; 如果出错，返回空数组
@@ -522,6 +531,7 @@ ToggleApp(appKey, *) {
 HandleMultipleWindows(appKey, windows, appConfig) {
     currentIndex := AppWindowIndex[appKey]
     windowCount := windows.Length
+    nextIndex := 0
 
     ; 检查当前是否有活动的应用窗口
     activeWindowIndex := 0
@@ -532,10 +542,29 @@ HandleMultipleWindows(appKey, windows, appConfig) {
         }
     }
 
-    ; 如果当前有活动窗口
+    ; 确定下一个窗口索引
     if (activeWindowIndex > 0) {
-        ; 如果是最后一个窗口，最小化所有窗口
-        if (currentIndex >= windowCount) { ; 这里用 >= 是为了处理窗口减少的情况
+        ; 基于当前活动窗口计算下一个窗口
+        nextIndex := activeWindowIndex + 1
+    } else {
+        ; 没有检测到活动窗口，基于保存的索引计算
+        if (currentIndex <= 0 || currentIndex > windowCount) {
+            ; 索引无效，从第一个窗口开始
+            nextIndex := 1
+        } else {
+            ; 基于保存的索引计算下一个窗口
+            nextIndex := currentIndex + 1
+        }
+    }
+
+    ; 处理循环边界
+    if (nextIndex > windowCount) {
+        ; 检查是否启用了持续循环模式
+        if (appConfig.HasOwnProp("cycleContinuous") && appConfig.cycleContinuous) {
+            ; 持续循环模式：回到第一个窗口
+            nextIndex := 1
+        } else {
+            ; 默认模式：最小化所有窗口
             for hwnd in windows {
                 if (WinGetMinMax(hwnd) != -1) {  ; 如果窗口没有最小化
                     WinMinimize(hwnd)
@@ -543,45 +572,35 @@ HandleMultipleWindows(appKey, windows, appConfig) {
             }
             ShowNotification(appConfig.name . " all windows are minimized (total " . windowCount . ")")
             AppWindowIndex[appKey] := 0  ; 重置索引
-        }
-        else {
-            ; 激活下一个窗口
-            nextIndex := currentIndex + 1
-            nextHwnd := windows[nextIndex]
-
-            if (WinGetMinMax(nextHwnd) = -1) {  ; 如果窗口最小化了
-                WinRestore(nextHwnd)
-            }
-            WinActivate(nextHwnd)
-            WinShow(nextHwnd)
-
-            windowTitle := WinGetTitle(nextHwnd)
-            if (StrLen(windowTitle) > 50) {
-                windowTitle := SubStr(windowTitle, 1, 50) . "..."
-            }
-
-            ShowNotification(appConfig.name . " window " . nextIndex . "/" . windowCount . ": " . windowTitle)
-            AppWindowIndex[appKey] := nextIndex
+            return
         }
     }
-    else {
-        ; 没有活动窗口，激活第一个窗口
-        firstHwnd := windows[1]
 
-        if (WinGetMinMax(firstHwnd) = -1) {  ; 如果窗口最小化了
-            WinRestore(firstHwnd)
-        }
-        WinActivate(firstHwnd)
-        WinShow(firstHwnd)
+    ; 激活目标窗口
+    targetHwnd := windows[nextIndex]
 
-        windowTitle := WinGetTitle(firstHwnd)
-        if (StrLen(windowTitle) > 50) {
-            windowTitle := SubStr(windowTitle, 1, 50) . "..."
-        }
-
-        ShowNotification(appConfig.name . " window 1/" . windowCount . ": " . windowTitle)
-        AppWindowIndex[appKey] := 1
+    if (WinGetMinMax(targetHwnd) = -1) {  ; 如果窗口最小化了
+        WinRestore(targetHwnd)
     }
+    WinActivate(targetHwnd)
+    WinShow(targetHwnd)
+
+    ; 更新索引
+    AppWindowIndex[appKey] := nextIndex
+
+    ; 生成窗口标题信息
+    windowTitle := WinGetTitle(targetHwnd)
+    if (StrLen(windowTitle) > 50) {
+        windowTitle := SubStr(windowTitle, 1, 50) . "..."
+    }
+
+    ; 添加循环标记
+    cycleInfo := ""
+    if (nextIndex = 1 && (activeWindowIndex = windowCount || currentIndex = windowCount)) {
+        cycleInfo := " (cycle)"
+    }
+
+    ShowNotification(appConfig.name . " window " . nextIndex . "/" . windowCount . cycleInfo . ": " . windowTitle)
 }
 
 ; 备用最大化方案（用于不支持启动时最大化的应用）
@@ -762,14 +781,21 @@ Hotkey Description:
 Function Description:
     • The first press of the hotkey will start the corresponding application
     • Single window: Minimize when active, activate when inactive
-    • Multi-window: Cycle through each window, minimize all when on the last window
+    • Multi-window: Two cycle modes available (configurable via cycleContinuous option)
     • Display window titles and numbers for easy identification
 
 Multi-window cycle logic:
     1. First press: Activate the first window
     2. Continue pressing: Activate subsequent windows in turn
-    3. Last window: Minimize all windows
-    4. Press again: Start again from the first window
+    3. Last window behavior (depends on cycleContinuous setting):
+       - cycleContinuous=true (default): Jump back to first window and continue cycling
+       - cycleContinuous=false: Minimize all windows
+    4. When all windows minimized: Press again to start from the first window
+
+Configuration options:
+    • cycleContinuous: true/false - Controls multi-window cycling behavior
+    • maximize: true/false - Whether to maximize window on startup
+    • disable: true/false - Whether to disable this application
 
 Adding new applications:
     Simply add new application configurations to the Apps section at the beginning of the script!

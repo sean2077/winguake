@@ -64,6 +64,9 @@ winguake 会自动读取 `winguake.ahk` 或 `winguake.exe` 同目录下的配置
 
 - disable：是否禁用该应用，可用于覆盖默认配置的应用
 - maximize：是否在启动应用时最大化窗口（默认：false）
+- cycleContinuous：多窗口循环行为（默认：true）
+  - `true`：持续循环不最小化（A→B→C→A→B→C...）
+  - `false`：循环到最后窗口时最小化所有窗口
 
 > ⚠️ 注意：不可在行末尾添加注释，如需添加，请添加在上一行
 
@@ -81,8 +84,55 @@ maximize=true
 disable=true
 
 ```
+[Notepad]
+hotkey=F7
+exe=notepad.exe
+launchCmd=notepad
+name=记事本
+launchPaths=notepad.exe|C:\Windows\System32\notepad.exe
+maximize=true
+cycleContinuous=false
+; set disable=false if you want to register this app
+disable=true
 
-### 3.3. 启动时最大化功能
+```
+
+### 3.3. 多窗口循环功能
+
+winguake 支持两种不同的循环行为来管理同一应用程序的多个窗口：
+
+**持续循环模式（`cycleContinuous=true`，默认）：**
+- 窗口持续循环：A → B → C → A → B → C...
+- 不会通过最小化所有窗口来中断循环
+- 适用于频繁在多个窗口间切换的应用程序
+
+**传统模式（`cycleContinuous=false`）：**
+- 窗口循环后重置：A → B → C → （最小化所有）→ A → B → C...
+- 到达最后一个窗口后，所有窗口被最小化
+- 类似传统的窗口管理行为
+
+**配置方法：**
+在 `winguake.ini` 的任意应用程序部分添加 `cycleContinuous=true/false`：
+
+```ini
+[VSCode]
+hotkey=F4
+exe=Code.exe
+launchCmd=code
+name=Visual Studio Code
+maximize=true
+cycleContinuous=true
+
+[Chrome]
+hotkey=F5
+exe=chrome.exe
+launchCmd=chrome
+name=Google Chrome
+maximize=true
+cycleContinuous=false
+```
+
+### 3.4. 启动时最大化功能
 
 winguake 支持在首次启动应用程序时自动最大化窗口。此功能使用 Windows 原生的窗口启动参数，具有最佳的兼容性和性能。
 
@@ -108,6 +158,7 @@ exe=chrome.exe
 launchCmd=chrome
 name=Google Chrome
 maximize=true
+cycleContinuous=true
 ```
 
 **行为说明：**
