@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/sean2077/winguake/compare/v1.2.0...v1.3.0) (2025-09-03)
+
+
+### Features
+
+* add multi-language support and improve notifications ([1cab920](https://github.com/sean2077/winguake/commit/1cab9202cf34c5dbe9d8adc657430889bc9ee696))
+
 # [1.2.0](https://github.com/sean2077/winguake/compare/v1.1.1...v1.2.0) (2025-09-03)
 
 
