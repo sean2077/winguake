@@ -49,13 +49,15 @@ winguake 是一款让你可以在 Windows 下通过热键 显示/隐藏/启动�
 
 有两种方案可共选择：
 
-### 2.1. 安装 AutoHotkey 后使用 AutoHotkey 启动 winguake.ahk（推荐）
+### 2.1. 方式一：下载打包好的便携式 exe（推荐）
 
-下载 [AutoHotkey v2](https://autohotkey.com/download/ahk-v2.exe) 并安装，下载本项目的 `winguake.ahk` 脚本，然后就可以像使用 Python 调用 py 脚本一样用 autohotkey 调用 ahk 脚本，或者你也可以直接点击 `winguake.ahk`（如果关联了打开 ahk 格式的工具为 autohotkey 的话）。
-
-### 2.2. 下载打包好的便携式 exe
+从 [发布页面](https://github.com/sean2077/winguake/releases/latest) 下载最新的 `winguake.exe` 文件。
 
 AHK 脚本也可以 [编译](https://wyagd001.github.io/v2/docs/Scripts.htm#ahk2exe)，即与 AutoHotkey 二进制文件结合在一起, 形成一个独立的可执行 (.exe) 文件. 本项目发布的 exe 即是基于此项技术实现，对于不想额外安装 Autohotkey 的用户，可以使用这种方案。
+
+### 2.2. 方式二：安装 AutoHotkey 后使用 AutoHotkey 启动 winguake.ahk
+
+下载 [AutoHotkey v2](https://autohotkey.com/download/ahk-v2.exe) 并安装，下载本项目的 `winguake.ahk` 脚本，然后就可以像使用 Python 调用 py 脚本一样用 autohotkey 调用 ahk 脚本，或者你也可以直接点击 `winguake.ahk`（如果关联了打开 ahk 格式的工具为 autohotkey 的话）。
 
 ## 3. 使用
 

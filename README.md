@@ -48,13 +48,15 @@ Neither of these fully satisfied my needs, so I implemented this solution based 
 
 There are two options for installation:
 
-### 2.1. Install AutoHotkey and use AutoHotkey to run winguake.ahk (Recommended)
+### 2.1. Method 1: Download the portable EXE version (Recommended)
 
-Download and install [AutoHotkey v2](https://autohotkey.com/download/ahk-v2.exe), then download the `winguake.ahk` script from this project. You can run it with AutoHotkey just like running Python scripts with `python`, or simply double-click the `winguake.ahk` script if your system is set to open `.ahk` files with AutoHotkey.
-
-### 2.2. Download the portable EXE version
+From the [releases page](https://github.com/sean2077/winguake/releases/latest), download the latest `winguake.exe` file.
 
 AHK scripts can also be [compiled](https://wyagd001.github.io/v2/docs/Scripts.htm#ahk2exe) into a standalone executable (.exe) file by combining the AHK script with the AutoHotkey binary. The EXE version provided in this project is based on this method, for users who do not want to install AutoHotkey separately.
+
+### 2.2. Method 2: Install AutoHotkey and use AutoHotkey to run winguake.ahk
+
+Download and install [AutoHotkey v2](https://autohotkey.com/download/ahk-v2.exe), then download the `winguake.ahk` script from this project. You can run it with AutoHotkey just like running Python scripts with `python`, or simply double-click the `winguake.ahk` script if your system is set to open `.ahk` files with AutoHotkey.
 
 ## 3. Usage
 
