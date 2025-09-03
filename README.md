@@ -37,7 +37,8 @@ winguake has hotkey configurations for the following applications by default. Yo
 * F3 - Windows Terminal (with auto-maximize)
 * F4 - VSCode (with auto-maximize)
 * F5 - Chrome (with auto-maximize)  
-* F6 - Obsidian
+
+You can modify or override these hotkey configurations in the `winguake.ini` file.
 
 For more help, you can access it from the tray menu under Help.
 
@@ -70,16 +71,6 @@ Optional Keywords:
 
 Example:
 
-```
-[Notepad]
-hotkey=F7
-exe=notepad.exe
-launchCmd=notepad
-name=Notepad
-launchPaths=notepad.exe|C:\Windows\System32\notepad.exe
-maximize=true
-; set disable=false if you want to register this app
-disable=true
 ```
 [Notepad]
 hotkey=F7

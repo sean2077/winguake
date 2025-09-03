@@ -38,8 +38,8 @@ AHK 脚本也可以 [编译](https://wyagd001.github.io/v2/docs/Scripts.htm#ahk
 - F3 - Windows 终端（启用自动最大化）
 - F4 - VSCode（启用自动最大化）
 - F5 - Chrome（启用自动最大化）
-- F6 - Obsidian
 
+你可以通过配置文件 `winguake.ini` 来修改或覆盖这些热键配置。
 
 更多帮助信息可以在托盘菜单 - 帮助中查看。
 
@@ -80,21 +80,9 @@ launchCmd=notepad
 name=记事本
 launchPaths=notepad.exe|C:\Windows\System32\notepad.exe
 maximize=true
-; set disable=false if you want to register this app
-disable=true
-
-```
-[Notepad]
-hotkey=F7
-exe=notepad.exe
-launchCmd=notepad
-name=记事本
-launchPaths=notepad.exe|C:\Windows\System32\notepad.exe
-maximize=true
 cycleContinuous=false
 ; set disable=false if you want to register this app
 disable=true
-
 ```
 
 ### 3.3. 多窗口循环功能
