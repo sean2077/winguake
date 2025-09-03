@@ -3,7 +3,7 @@
 ; AutoHotkey v2 Script
 ; Author：Sean2077
 
-VERSION := "1.4.0"
+VERSION := "1.4.1"
 SCRIPT_NAME := "winguake(v" . VERSION . ")"
 
 ; ==================== 多语言支持 ====================

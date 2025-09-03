@@ -1,3 +1,10 @@
+## [1.4.1](https://github.com/sean2077/winguake/compare/v1.4.0...v1.4.1) (2025-09-03)
+
+
+### Bug Fixes
+
+* update configuration text generation for consistent line endings and ensure all properties are included ([daa3118](https://github.com/sean2077/winguake/commit/daa3118a8ec97f48d597beb47ffb2c932da5e535))
+
 # [1.4.0](https://github.com/sean2077/winguake/compare/v1.3.0...v1.4.0) (2025-09-03)
 
 
