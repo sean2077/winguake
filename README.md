@@ -1,6 +1,8 @@
+<div align="center">
+
 # winguake
 
-[中文](README-zh.md) | English
+**[中文](README-zh.md) | English**
 
 <p align="center">
     <a href="https://www.autohotkey.com/"><img
@@ -21,6 +23,8 @@
     <a href="https://github.com/sean2077/winguake/blob/main/LICENSE"><img
             src="https://img.shields.io/github/license/sean2077/winguake" alt="License" /></a>
 </p>
+
+</div>
 
 ---
 
