@@ -76,6 +76,18 @@ if (IS_CHINESE) {
     Lang.UPDATED := "已更新"
     Lang.APPLICATIONS := "个应用程序"
     Lang.NO_UPDATES := "未找到有效的配置更新"
+    ; 配置编辑器相关文本
+    Lang.CONFIG_EDITOR_HELP := "在下方编辑配置，然后点击 '保存并应用' 来更新设置。配置采用INI格式。"
+    Lang.CONFIG_SAVE_APPLY := "保存并应用"
+    Lang.CONFIG_RESET := "重置"
+    Lang.CONFIG_FORMAT_DESC := "配置文件格式说明："
+    Lang.CONFIG_SECTION_DESC := "每个应用程序一个段落 [AppName]"
+    Lang.CONFIG_OPTIONS_DESC := "支持的配置项：hotkey, exe, launchCmd, name, launchPaths, maximize, cycleContinuous, disable"
+    Lang.CONFIG_PATHS_DESC := "launchPaths 用 | 分隔多个路径"
+    Lang.CONFIG_SAVE_SUCCESS := "配置已保存并应用成功！"
+    Lang.CONFIG_VALIDATION_FAILED := "配置验证失败，请检查配置格式。"
+    Lang.CONFIG_SAVE_FAILED := "保存配置文件失败："
+    Lang.CONFIG_RESET_CONFIRM := "确定要重置到当前配置吗？所有未保存的更改将丢失。"
 } else {
     ; 英文语言包（默认）
     Lang.SCRIPT_FULLNAME := "Windows Quake - Quick Window Switcher (v" . VERSION . ")"
@@ -138,6 +150,18 @@ if (IS_CHINESE) {
     Lang.UPDATED := "Updated: "
     Lang.APPLICATIONS := " applications"
     Lang.NO_UPDATES := "No valid configuration updates found"
+    ; 配置编辑器相关文本
+    Lang.CONFIG_EDITOR_HELP := "Edit the configuration below, then click 'Save & Apply' to update settings. Configuration uses INI format."
+    Lang.CONFIG_SAVE_APPLY := "Save & Apply"
+    Lang.CONFIG_RESET := "Reset"
+    Lang.CONFIG_FORMAT_DESC := "Configuration Format:"
+    Lang.CONFIG_SECTION_DESC := "Each application has a section [AppName]"
+    Lang.CONFIG_OPTIONS_DESC := "Supported options: hotkey, exe, launchCmd, name, launchPaths, maximize, cycleContinuous, disable"
+    Lang.CONFIG_PATHS_DESC := "launchPaths use | to separate multiple paths"
+    Lang.CONFIG_SAVE_SUCCESS := "Configuration saved and applied successfully!"
+    Lang.CONFIG_VALIDATION_FAILED := "Configuration validation failed, please check the format."
+    Lang.CONFIG_SAVE_FAILED := "Failed to save configuration file:"
+    Lang.CONFIG_RESET_CONFIRM := "Are you sure you want to reset to current configuration? All unsaved changes will be lost."
 }
 
 ; 设置脚本为单实例运行
@@ -192,17 +216,6 @@ Apps["Chrome"] := {
     name: "Google Chrome",
     maximize: true,  ; 默认启动时最大化
     cycleContinuous: true  ; 多窗口循环模式：持续循环不最小化
-}
-
-Apps["Obsidian"] := {
-    hotkey: "F6",
-    exe: "Obsidian.exe",
-    launchCmd: "obsidian://",
-    launchPaths: [
-        "obsidian://",
-        "C:\Program Files\Obsidian\Obsidian.exe"
-    ],
-    name: "Obsidian"
 }
 
 ; ==================== 读取配置文件 ====================
@@ -474,36 +487,195 @@ OpenConfigFile() {
 
 ; 辅助函数：显示当前配置
 ShowCurrentConfig() {
-    message := Lang.CONFIG_HEADER
+    ; 使用可编辑的配置窗口
+    ShowConfigEditor()
+}
+
+; 显示配置编辑器窗口
+ShowConfigEditor() {
+    ; 生成当前配置的INI格式文本
+    configText := GenerateConfigText()
+
+    ; 创建GUI窗口
+    configGui := Gui("+Resize +MinSize500x400", Lang.CONFIG_TITLE . " - " . SCRIPT_NAME)
+    configGui.MarginX := 10
+    configGui.MarginY := 10
+
+    ; 添加说明文本
+    infoCtrl := configGui.Add("Text", "w580 h30 +Wrap", Lang.CONFIG_EDITOR_HELP)
+    infoCtrl.SetFont("s9")
+
+    ; 添加编辑控件（可编辑，支持滚动）
+    editCtrl := configGui.Add("Edit", "VScroll HScroll w580 h300", configText)
+    editCtrl.SetFont("s9", "Consolas")  ; 使用等宽字体便于编辑
+
+    ; 添加按钮行
+    buttonY := 350
+
+    ; 保存并应用按钮
+    saveBtn := configGui.Add("Button", "x10 y" . buttonY . " w120 h30", Lang.CONFIG_SAVE_APPLY)
+    saveBtn.OnEvent("Click", (*) => SaveConfigFromEditor(editCtrl, configGui))
+
+    ; 重置按钮
+    resetBtn := configGui.Add("Button", "x140 y" . buttonY . " w80 h30", Lang.CONFIG_RESET)
+    resetBtn.OnEvent("Click", (*) => ResetConfigEditor(editCtrl))
+
+    ; 关闭按钮
+    closeBtn := configGui.Add("Button", "x480 y" . buttonY . " w100 h30", Lang.MENU_EXIT)
+    closeBtn.OnEvent("Click", (*) => configGui.Destroy())
+
+    ; 设置窗口事件
+    configGui.OnEvent("Close", (*) => configGui.Destroy())
+    configGui.OnEvent("Escape", (*) => configGui.Destroy())
+
+    ; 显示窗口
+    configGui.Show("w600 h400")
+
+    ; 窗口大小调整事件
+    configGui.OnEvent("Size", ConfigEditor_Size)
+
+    ConfigEditor_Size(GuiObj, MinMax, Width, Height) {
+        if (MinMax = -1)  ; 最小化时不处理
+            return
+
+        ; 调整控件大小和位置
+        newWidth := Width - 20
+        newEditHeight := Height - 100
+        newButtonY := Height - 40
+
+        infoCtrl.Move(, , newWidth)
+        editCtrl.Move(, , newWidth, newEditHeight)
+
+        ; 重新定位按钮
+        saveBtn.Move(, newButtonY)
+        resetBtn.Move(, newButtonY)
+        closeBtn.Move(newWidth - 100, newButtonY)
+    }
+}
+
+; 生成配置文本（INI格式）
+GenerateConfigText() {
+    configText := "; " . Lang.SCRIPT_FULLNAME . " Configuration File`n"
+    configText .= "; " . Lang.CONFIG_FORMAT_DESC . "`n"
+    configText .= "; " . Lang.CONFIG_SECTION_DESC . "`n"
+    configText .= "; " . Lang.CONFIG_OPTIONS_DESC . "`n"
+    configText .= "; " . Lang.CONFIG_PATHS_DESC . "`n`n"
 
     sortedApps := GetSortedApps(true)  ; 包含禁用的应用
     for index, appData in sortedApps {
         appName := appData.key
         appConfig := appData.config
 
-        message .= "[" . appName . "]`n"
-        message .= Lang.CONFIG_HOTKEY . appConfig.hotkey . "`n"
-        message .= Lang.CONFIG_PROCESS . appConfig.exe . "`n"
-        message .= Lang.CONFIG_LAUNCH_CMD . appConfig.launchCmd . "`n"
-        message .= Lang.CONFIG_DISPLAY_NAME . appConfig.name . "`n"
-        message .= Lang.CONFIG_LAUNCH_PATHS
+        configText .= "[" . appName . "]`n"
 
+        ; 基本配置
+        configText .= "hotkey=" . appConfig.hotkey . "`n"
+        configText .= "exe=" . appConfig.exe . "`n"
+        configText .= "launchCmd=" . appConfig.launchCmd . "`n"
+        configText .= "name=" . appConfig.name . "`n"
+
+        ; 启动路径（转换为 | 分隔的字符串）
         if (appConfig.launchPaths.Length > 0) {
-            for index, path in appConfig.launchPaths {
-                message .= path
-                if (index < appConfig.launchPaths.Length)
-                    message .= " | "
+            pathStr := ""
+            for i, path in appConfig.launchPaths {
+                pathStr .= path
+                if (i < appConfig.launchPaths.Length)
+                    pathStr .= "|"
             }
+            configText .= "launchPaths=" . pathStr . "`n"
         }
-        message .= "`n"
-        message .= Lang.CONFIG_DISABLED . (IsDisabled(appConfig) ? Lang.YES : Lang.NO) . "`n"
-        message .= Lang.CONFIG_MAXIMIZE . (appConfig.HasOwnProp("maximize") && appConfig.maximize ? Lang.YES : Lang.NO) . "`n"
-        message .= Lang.CONFIG_CYCLE . (appConfig.HasOwnProp("cycleContinuous") && appConfig.cycleContinuous ? Lang.YES : Lang.NO) . "`n"
-        message .= "`n"
+
+        ; 可选配置
+        if (appConfig.HasOwnProp("maximize"))
+            configText .= "maximize=" . (appConfig.maximize ? "true" : "false") . "`n"
+        if (appConfig.HasOwnProp("cycleContinuous"))
+            configText .= "cycleContinuous=" . (appConfig.cycleContinuous ? "true" : "false") . "`n"
+        if (appConfig.HasOwnProp("disable"))
+            configText .= "disable=" . (appConfig.disable ? "true" : "false") . "`n"
+
+        configText .= "`n"
     }
 
-    ; 使用 MsgBox 显示详细信息
-    MsgBox(message, Lang.CONFIG_TITLE . " - " . SCRIPT_NAME, "T15")
+    return configText
+}
+
+; 从编辑器保存配置
+SaveConfigFromEditor(editCtrl, configGui) {
+    configText := editCtrl.Text
+
+    ; 获取配置文件路径
+    configPath := GetConfigFilePath()
+
+    try {
+        ; 保存到文件
+        FileDelete(configPath)  ; 删除旧文件
+        FileAppend(configText, configPath, "UTF-8")
+
+        ; 重新加载配置
+        if (LoadConfig(configPath)) {
+            ; 重新注册热键
+            RegisterHotkeys()
+
+            ; 重建托盘菜单
+            CreateTrayMenu()
+
+            ; 显示成功消息
+            MsgBox(Lang.CONFIG_SAVE_SUCCESS, Lang.CONFIG_TITLE . " - " . SCRIPT_NAME, "T3")
+
+            ; 关闭编辑器窗口
+            configGui.Destroy()
+        } else {
+            ; 配置验证失败
+            MsgBox(Lang.CONFIG_VALIDATION_FAILED, Lang.CONFIG_TITLE . " - " . SCRIPT_NAME, 0x10)
+        }
+    } catch as e {
+        ; 保存失败
+        MsgBox(Lang.CONFIG_SAVE_FAILED . " " . e.message, Lang.CONFIG_TITLE . " - " . SCRIPT_NAME, 0x10)
+    }
+}
+
+; 重置配置编辑器内容
+ResetConfigEditor(editCtrl) {
+    result := MsgBox(Lang.CONFIG_RESET_CONFIRM, Lang.CONFIG_TITLE . " - " . SCRIPT_NAME, 4)
+    if (result = "Yes") {
+        editCtrl.Text := GenerateConfigText()
+    }
+}
+
+; 显示可滚动文本窗口（保留用于其他功能）
+ShowScrollableText(text, title := "Information", width := 600, height := 400) {
+    ; 创建GUI窗口
+    configGui := Gui("+Resize +MinSize400x300", title)
+    configGui.MarginX := 10
+    configGui.MarginY := 10
+
+    ; 添加编辑控件（只读，支持滚动）
+    editCtrl := configGui.Add("Edit", "ReadOnly VScroll HScroll w" . (width - 40) . " h" . (height - 80), text)
+    editCtrl.SetFont("s9", "Consolas")  ; 使用等宽字体便于阅读
+
+    ; 添加关闭按钮
+    closeBtn := configGui.Add("Button", "w100 h30", Lang.MENU_EXIT)
+    closeBtn.OnEvent("Click", (*) => configGui.Destroy())
+
+    ; 设置窗口事件
+    configGui.OnEvent("Close", (*) => configGui.Destroy())
+    configGui.OnEvent("Escape", (*) => configGui.Destroy())
+
+    ; 居中显示窗口
+    configGui.Show("w" . width . " h" . height)
+
+    ; 窗口大小调整事件
+    configGui.OnEvent("Size", ConfigGui_Size)
+
+    ConfigGui_Size(GuiObj, MinMax, Width, Height) {
+        if (MinMax = -1)  ; 最小化时不处理
+            return
+
+        ; 调整编辑控件大小
+        editCtrl.Move(, , Width - 40, Height - 80)
+        ; 调整按钮位置
+        closeBtn.Move((Width - 100) / 2, Height - 50)
+    }
 }
 
 IsDisabled(appConfig) {
@@ -571,10 +743,16 @@ AppWindowIndex := Map()
 ; ==================== 自动化热键注册 ====================
 ; 🤖 这部分会自动根据配置创建热键，无需手动修改！
 
+; 存储已注册的热键
+RegisteredHotkeys := Map()
+
 ; 根据配置自动注册热键
 RegisterHotkeys()
 
 RegisterHotkeys() {
+    ; 先清除所有已注册的热键
+    ClearAllHotkeys()
+
     for appKey, appConfig in Apps {
         if (IsDisabled(appConfig)) {
             continue
@@ -588,12 +766,25 @@ RegisterHotkeys() {
             try
             {
                 Hotkey(appConfig.hotkey, ToggleApp.Bind(appKey))
+                RegisteredHotkeys[appConfig.hotkey] := appKey
             }
             catch as err {
                 ShowNotification(Lang.HOTKEY_REGISTER_FAILED . ": " . appConfig.hotkey . " - " . err.message)
             }
         }
     }
+}
+
+; 清除所有已注册的热键
+ClearAllHotkeys() {
+    for hotkey, appKey in RegisteredHotkeys {
+        try {
+            Hotkey(hotkey, "Off")
+        } catch {
+            ; 忽略清除失败的热键
+        }
+    }
+    RegisteredHotkeys.Clear()
 }
 
 ; ==================== 核心函数 ====================
