@@ -2,6 +2,28 @@
 
 [中文](README-zh.md) | English
 
+<p align="center">
+    <a href="https://www.autohotkey.com/"><img
+            src="https://img.shields.io/badge/AutoHotkey-v2-334455?logo=autohotkey&logoColor=white"
+            alt="AutoHotkey v2" /></a>
+    <a href="https://github.com/sean2077/winguake/releases/latest"><img
+            src="https://img.shields.io/github/v/release/sean2077/winguake"
+            alt="Latest Release" /></a>
+    <a href="https://github.com/sean2077/winguake/releases"><img
+            src="https://img.shields.io/github/downloads/sean2077/winguake/total?logo=github"
+            alt="GitHub Downloads" /></a>
+    <a href="https://github.com/sean2077/winguake/stargazers"><img
+            src="https://img.shields.io/github/stars/sean2077/winguake"
+            alt="GitHub Stars" /></a>
+    <a href="https://github.com/sean2077/winguake/actions"><img
+            src="https://img.shields.io/github/actions/workflow/status/sean2077/winguake/release.yml?branch=main"
+            alt="Build Status" /></a>
+    <a href="https://github.com/sean2077/winguake/blob/main/LICENSE"><img
+            src="https://img.shields.io/github/license/sean2077/winguake" alt="License" /></a>
+</p>
+
+---
+
 winguake is a lightweight tool for Windows that allows you to show, hide, or launch (almost) any application window using hotkeys, as well as switch between multiple windows of different applications or multiple windows of the same application. It is essentially an [AutoHotkey](https://github.com/AutoHotkey/AutoHotkey) v2 script.
 
 * Use hotkeys to **show, hide, or launch (almost) any application window**

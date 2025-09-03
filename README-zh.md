@@ -2,6 +2,28 @@
 
 中文 | [English](README_en.md)
 
+<p align="center">
+    <a href="https://www.autohotkey.com/"><img
+            src="https://img.shields.io/badge/AutoHotkey-v2-334455?logo=autohotkey&logoColor=white"
+            alt="AutoHotkey v2" /></a>
+    <a href="https://github.com/sean2077/winguake/releases/latest"><img
+            src="https://img.shields.io/github/v/release/sean2077/winguake"
+            alt="Latest Release" /></a>
+    <a href="https://github.com/sean2077/winguake/releases"><img
+            src="https://img.shields.io/github/downloads/sean2077/winguake/total?logo=github"
+            alt="GitHub Downloads" /></a>
+    <a href="https://github.com/sean2077/winguake/stargazers"><img
+            src="https://img.shields.io/github/stars/sean2077/winguake"
+            alt="GitHub Stars" /></a>
+    <a href="https://github.com/sean2077/winguake/actions"><img
+            src="https://img.shields.io/github/actions/workflow/status/sean2077/winguake/release.yml?branch=main"
+            alt="Build Status" /></a>
+    <a href="https://github.com/sean2077/winguake/blob/main/LICENSE"><img
+            src="https://img.shields.io/github/license/sean2077/winguake" alt="License" /></a>
+</p>
+
+---
+
 winguake 是一款让你可以在 Windows 下通过热键 显示/隐藏/启动（几乎）任意应用窗口，以及在多应用或同应用的多窗口之间切换的轻量化工具（本质是 [AutoHotkey](https://github.com/AutoHotkey/AutoHotkey) v2 脚本）。
 
 - 通过热键**显示/隐藏/启动（几乎）任意应用窗口**
