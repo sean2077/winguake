@@ -344,7 +344,11 @@ OpenConfigFile() {
 ShowCurrentConfig() {
     message := "Current application configuration (valid parts):`n`n"
 
-    for appName, appConfig in Apps {
+    sortedApps := GetSortedApps(true)  ; 包含禁用的应用
+    for index, appData in sortedApps {
+        appName := appData.key
+        appConfig := appData.config
+
         message .= "[" . appName . "]`n"
         message .= "  Hotkey: " . appConfig.hotkey . "`n"
         message .= "  Process Name: " . appConfig.exe . "`n"
@@ -376,6 +380,39 @@ IsDisabled(appConfig) {
     if appConfig.disable = "No" || appConfig.disable = "0" || appConfig.disable = "OFF" || appConfig.disable = "false"
         return false
     return true
+}
+
+; 获取按快捷键排序的应用列表
+GetSortedApps(includeDisabled := false) {
+    sortedApps := []
+
+    ; 收集所有应用
+    for appKey, appConfig in Apps {
+        if (!includeDisabled && IsDisabled(appConfig)) {
+            continue
+        }
+        sortedApps.Push({ key: appKey, config: appConfig })
+    }
+
+    ; 按快捷键排序
+    if (sortedApps.Length > 1) {
+        loop sortedApps.Length - 1 {
+            outer := A_Index
+            loop sortedApps.Length - outer {
+                inner := A_Index
+                ; 使用字符串比较
+                hotkey1 := sortedApps[inner].config.hotkey
+                hotkey2 := sortedApps[inner + 1].config.hotkey
+                if (StrCompare(hotkey1, hotkey2) > 0) {
+                    temp := sortedApps[inner]
+                    sortedApps[inner] := sortedApps[inner + 1]
+                    sortedApps[inner + 1] := temp
+                }
+            }
+        }
+    }
+
+    return sortedApps
 }
 
 
@@ -695,7 +732,11 @@ ShowNotification(message, delay := 500) {
 ShowAppStatus() {
     status := "Windows Quake - application status:`n`n"
 
-    for appKey, appConfig in Apps {
+    sortedApps := GetSortedApps(true)  ; 包含禁用的应用
+    for index, appData in sortedApps {
+        appKey := appData.key
+        appConfig := appData.config
+
         windows := GetAppWindows(appConfig.exe)
         windowCount := windows.Length
 
@@ -739,11 +780,11 @@ CreateTrayMenu() {
     ; 清除默认菜单并创建自定义菜单
     A_TrayMenu.Delete()
 
-    ; 为每个应用添加菜单项
-    for appKey, appConfig in Apps {
-        if IsDisabled(appConfig) {
-            continue
-        }
+    ; 为每个应用添加菜单项（按快捷键排序）
+    sortedApps := GetSortedApps(false)  ; 不包含禁用的应用
+    for index, appData in sortedApps {
+        appKey := appData.key
+        appConfig := appData.config
         A_TrayMenu.Add("Toggle " . appConfig.name . " (" . appConfig.hotkey . ")", ToggleApp.Bind(appKey))
     }
 
@@ -767,8 +808,10 @@ ShowHelp(*) {
     ; 动态生成帮助文本
     helpText := SCRIPT_FULLNAME . "`n`nCurrent managed applications:`n"
 
-    ; 列出所有配置的应用
-    for appKey, appConfig in Apps {
+    ; 列出所有配置的应用（按快捷键排序）
+    sortedApps := GetSortedApps(true)  ; 包含禁用的应用
+    for index, appData in sortedApps {
+        appConfig := appData.config
         helpText .= appConfig.hotkey . "  - " . appConfig.name . "`n"
     }
 
@@ -815,10 +858,9 @@ GenerateStartupNotification()
 
 GenerateStartupNotification() {
     appList := ""
-    for appKey, appConfig in Apps {
-        if IsDisabled(appConfig) {
-            continue
-        }
+    sortedApps := GetSortedApps(false)  ; 不包含禁用的应用
+    for index, appData in sortedApps {
+        appConfig := appData.config
         appList .= "- " . appConfig.hotkey . ":" . appConfig.name . "`n"
     }
 
