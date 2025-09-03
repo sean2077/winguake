@@ -1,3 +1,11 @@
+# [1.4.0](https://github.com/sean2077/winguake/compare/v1.3.0...v1.4.0) (2025-09-03)
+
+
+### Features
+
+* enhance configuration editor with multi-language support and improved UI ([1bdc75f](https://github.com/sean2077/winguake/commit/1bdc75fa4481a92e04f11838a7af1a9e6ec818d7))
+* update menu options for clarity and add editting configuration item ([59e6bd1](https://github.com/sean2077/winguake/commit/59e6bd19ca1d29a20d4c12808d1e0b12c3aeb8fa))
+
 # [1.3.0](https://github.com/sean2077/winguake/compare/v1.2.0...v1.3.0) (2025-09-03)
 
 
