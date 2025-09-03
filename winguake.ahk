@@ -46,7 +46,7 @@ if (IS_CHINESE) {
     Lang.STATUS_NOT_RUNNING := "未运行"
     Lang.MENU_TOGGLE := "切换"
     Lang.MENU_SHOW_STATUS := "显示应用状态"
-    Lang.MENU_SHOW_CONFIG := "显示当前应用配置状态"
+    Lang.MENU_SHOW_CONFIG := "编辑当前应用配置状态"
     Lang.MENU_OPEN_DIR := "打开脚本和配置文件目录"
     Lang.MENU_OPEN_CONFIG := "打开配置文件"
     Lang.MENU_HELP := "帮助"
@@ -120,7 +120,7 @@ if (IS_CHINESE) {
     Lang.STATUS_NOT_RUNNING := "Not Running"
     Lang.MENU_TOGGLE := "Toggle"
     Lang.MENU_SHOW_STATUS := "Show app status"
-    Lang.MENU_SHOW_CONFIG := "Show current app config status"
+    Lang.MENU_SHOW_CONFIG := "Edit current app config status"
     Lang.MENU_OPEN_DIR := "Open directory of script and config file"
     Lang.MENU_OPEN_CONFIG := "Open configuration file"
     Lang.MENU_HELP := "Help"
@@ -220,6 +220,25 @@ Apps["Chrome"] := {
 
 ; ==================== 读取配置文件 ====================
 
+; 转换字符串为布尔值
+ConvertToBool(value) {
+    ; 去除前后空格并转为小写
+    cleanValue := Trim(StrLower(value))
+
+    ; 检查真值
+    if (cleanValue = "true" || cleanValue = "yes" || cleanValue = "1" || cleanValue = "on") {
+        return true
+    }
+
+    ; 检查假值
+    if (cleanValue = "false" || cleanValue = "no" || cleanValue = "0" || cleanValue = "off" || cleanValue = "") {
+        return false
+    }
+
+    ; 默认返回假值
+    return false
+}
+
 ; 获取脚本真实路径（处理快捷方式）
 GetScriptRealPath() {
     scriptPath := A_ScriptFullPath
@@ -305,6 +324,10 @@ LoadConfig(configFile) {
                             Apps[sectionName].launchPaths := [value]
                         }
 
+                    case "maximize", "cycleContinuous", "disable":
+                        ; 处理布尔类型的配置
+                        Apps[sectionName].%keyName% := ConvertToBool(value)
+
                     default:
                         Apps[sectionName].%keyName% := value
                 }
@@ -349,6 +372,10 @@ LoadConfig(configFile) {
                             newApp.launchPaths := [value]
                         }
 
+                    case "maximize", "cycleContinuous", "disable":
+                        ; 处理布尔类型的配置
+                        newApp.%keyName% := ConvertToBool(value)
+
                     default:
                         newApp.%keyName% := value
                 }
@@ -365,6 +392,12 @@ LoadConfig(configFile) {
                 newApp.name := sectionName
             if (!newApp.HasOwnProp("launchPaths"))
                 newApp.launchPaths := []
+            if (!newApp.HasOwnProp("maximize"))
+                newApp.maximize := false
+            if (!newApp.HasOwnProp("cycleContinuous"))
+                newApp.cycleContinuous := true
+            if (!newApp.HasOwnProp("disable"))
+                newApp.disable := false
 
             Apps[sectionName] := newApp
             updatedApps.Push(sectionName . " (New)")
@@ -391,25 +424,27 @@ LoadConfig(configFile) {
 ; 辅助函数：验证配置完整性
 ValidateAppConfig(appName, appConfig) {
     issues := []
-    ; 检查是否被禁用，若被禁用则跳过
-    if (appConfig.HasOwnProp("disable") && appConfig.disable)
+    ; 检查是否被禁用，若被禁用则跳过验证
+    if (IsDisabled(appConfig))
         return issues
 
-    ; 检查必需字段
+    ; 检查真正必需的字段（启动应用的最小要求）
     if (!appConfig.HasOwnProp("hotkey") || appConfig.hotkey = "")
         issues.Push("missing hotkey configuration: hotkey")
 
     if (!appConfig.HasOwnProp("exe") || appConfig.exe = "")
         issues.Push("missing process name configuration: exe")
 
-    if (!appConfig.HasOwnProp("launchCmd") || appConfig.launchCmd = "")
-        issues.Push("missing launch command configuration: launchCmd")
+    ; launchCmd 或 launchPaths 至少需要一个
+    hasLaunchCmd := appConfig.HasOwnProp("launchCmd") && appConfig.launchCmd != ""
+    hasLaunchPaths := appConfig.HasOwnProp("launchPaths") && appConfig.launchPaths.Length > 0
 
+    if (!hasLaunchCmd && !hasLaunchPaths)
+        issues.Push("missing launch method: need either launchCmd or launchPaths")
+
+    ; name 如果为空，设置默认值而不是报错
     if (!appConfig.HasOwnProp("name") || appConfig.name = "")
-        issues.Push("missing display name configuration: name")
-
-    if (!appConfig.HasOwnProp("launchPaths") || appConfig.launchPaths.Length = 0)
-        issues.Push("missing launch paths configuration: launchPaths")
+        appConfig.name := appName
 
     return issues
 }
@@ -681,9 +716,13 @@ ShowScrollableText(text, title := "Information", width := 600, height := 400) {
 IsDisabled(appConfig) {
     if !appConfig.HasOwnProp("disable")
         return false
-    if appConfig.disable = "No" || appConfig.disable = "0" || appConfig.disable = "OFF" || appConfig.disable = "false"
-        return false
-    return true
+
+    ; 如果 disable 是布尔值，直接返回
+    if (Type(appConfig.disable) = "Integer")
+        return appConfig.disable
+
+    ; 如果是字符串，进行转换
+    return ConvertToBool(appConfig.disable)
 }
 
 ; 获取按快捷键排序的应用列表
